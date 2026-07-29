@@ -1,0 +1,2615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canasta — House Rules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --felt: #5c3a22;
+  --felt-dark: #3b2415;
+  --felt-line: rgba(224,185,106,0.3);
+  --ivory: #fdf6e8;
+  --ivory-dim: #d8c7a8;
+  --ink: #241a10;
+  --brass: #d9a94e;
+  --brass-bright: #f2c877;
+  --freeze-ice: #7fb8d1;
+  --freeze-red: #b1483a;
+  --felt-panel: #6b4529;
+  --danger: #c1584a;
+  --good: #7fae72;
+  --card-red: #a83c2e;
+  --card-black: #241a10;
+  --radius: 10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:
+    radial-gradient(ellipse at top, rgba(255,255,255,0.04), transparent 60%),
+    var(--felt);
+  background-attachment:fixed;
+  color:var(--ivory);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+}
+h1,h2,h3,.display{font-family:'Fraunces',serif;}
+.mono{font-family:'JetBrains Mono',monospace;}
+button{font-family:'Inter',sans-serif;cursor:pointer;}
+::selection{background:var(--brass);color:var(--ink);}
+
+/* ---------- Setup screen ---------- */
+#setup-screen{
+  max-width:760px;margin:0 auto;padding:56px 24px 80px;
+}
+.brand{text-align:center;margin-bottom:8px;}
+#landing-screen{max-width:480px;margin:0 auto;padding:80px 24px;}
+.landing-choices{display:flex;flex-direction:column;gap:14px;margin-top:36px;}
+.landing-btn{
+  width:100%;padding:22px 24px;border-radius:14px;border:1px solid var(--felt-line);
+  background:var(--felt-panel);color:var(--ivory);text-align:left;transition:all .15s ease;
+  box-shadow:0 6px 16px rgba(0,0,0,0.25);
+}
+.landing-btn:hover{border-color:var(--brass);transform:translateY(-2px);box-shadow:0 10px 22px rgba(0,0,0,0.32);}
+.landing-btn-title{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--brass-bright);}
+.landing-btn-sub{font-size:13.5px;color:var(--ivory-dim);margin-top:4px;}
+
+.brand h1{font-size:52px;font-weight:600;letter-spacing:0.5px;margin:0;color:var(--ivory);}
+.brand .suit-row{font-size:22px;letter-spacing:10px;color:var(--brass);margin-top:6px;}
+.brand p.tag{color:var(--ivory-dim);font-size:14px;margin-top:10px;letter-spacing:0.3px;}
+
+.setup-card{
+  background:var(--felt-panel);
+  border:1px solid var(--felt-line);
+  border-radius:14px;
+  padding:28px 28px 24px;
+  margin-top:32px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.35);
+}
+.setup-card h2{margin:0 0 4px;font-size:20px;color:var(--brass-bright);font-weight:600;}
+.setup-card .hint{color:var(--ivory-dim);font-size:14.5px;margin-bottom:18px;}
+
+.count-row{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+.count-row .count-btn{flex:1 1 100px;}
+.count-btn{
+  flex:1;padding:16px 8px;border-radius:10px;border:1px solid var(--felt-line);
+  background:rgba(0,0,0,0.18);color:var(--ivory);font-size:15px;font-weight:600;
+  transition:all .15s ease;text-align:center;
+}
+.count-btn small{display:block;font-weight:400;color:var(--ivory-dim);font-size:11px;margin-top:4px;}
+.count-btn:hover{border-color:var(--brass);}
+.count-btn.active{background:var(--brass);color:var(--ink);border-color:var(--brass);}
+.count-btn.active small{color:rgba(28,25,18,0.7);}
+.cardback-swatch{
+  width:44px;height:62px;margin:0 auto 8px;border-radius:5px;border:1px solid rgba(0,0,0,0.35);
+  box-shadow:0 3px 8px rgba(0,0,0,0.35);
+}
+.classic-swatch{background:repeating-linear-gradient(135deg,var(--brass) 0 5px, #8a6a2c 5px 10px);}
+
+.seats{margin-top:20px;display:flex;flex-direction:column;gap:10px;}
+.seat-row{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(0,0,0,0.18);border:1px solid var(--felt-line);
+  border-radius:10px;padding:10px 14px;
+}
+.seat-row .team-chip{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+}
+.seat-row input[type=text]{
+  flex:1;background:transparent;border:none;color:var(--ivory);font-size:14px;
+  border-bottom:1px solid transparent;padding:4px 2px;
+}
+.seat-row input[type=text]:focus{outline:none;border-bottom:1px solid var(--brass);}
+.toggle-pair{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--felt-line);}
+.toggle-pair button{
+  padding:7px 14px;background:rgba(0,0,0,0.2);color:var(--ivory-dim);border:none;font-size:12px;font-weight:600;
+}
+.toggle-pair button.active{background:var(--brass);color:var(--ink);}
+
+.depth-block{margin-top:20px;padding-top:18px;border-top:1px dashed var(--felt-line);}
+.depth-block label{font-size:13px;color:var(--ivory-dim);display:flex;justify-content:space-between;margin-bottom:8px;}
+.depth-block .depth-val{color:var(--brass-bright);font-weight:600;}
+input[type=range]{width:100%;accent-color:var(--brass);}
+.depth-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--ivory-dim);margin-top:4px;}
+
+.start-btn{
+  margin-top:26px;width:100%;padding:16px;border:none;border-radius:10px;
+  background:linear-gradient(180deg,var(--brass-bright),var(--brass));
+  color:var(--ink);font-size:16px;font-weight:700;letter-spacing:0.3px;
+  box-shadow:0 6px 18px rgba(196,154,69,0.25);
+}
+.start-btn:hover{filter:brightness(1.05);}
+
+.rules-toggle{
+  text-align:center;margin-top:18px;color:var(--ivory-dim);font-size:12.5px;text-decoration:underline;cursor:pointer;
+}
+.rules-panel{
+  display:none;margin-top:14px;background:rgba(0,0,0,0.22);border:1px solid var(--felt-line);
+  border-radius:10px;padding:16px 18px;font-size:13.5px;line-height:1.65;color:var(--ivory-dim);
+}
+.rules-panel.show{display:block;}
+.rules-panel b{color:var(--ivory);}
+.rules-panel ul{margin:6px 0;padding-left:18px;}
+
+/* ---------- Game screen ---------- */
+#game-screen{display:none;max-width:1180px;margin:0 auto;padding:14px 14px 30px;}
+.topbar-mini{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:6px 2px 12px;
+}
+.round-info{font-size:13px;color:var(--ivory-dim);}
+.score-pills{display:flex;gap:10px;}
+.score-pill{
+  background:rgba(0,0,0,0.22);border:1px solid var(--felt-line);border-radius:8px;
+  padding:6px 12px;font-size:13px;text-align:center;min-width:88px;
+}
+.score-pill .name{color:var(--ivory-dim);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;}
+.score-pill .val{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:600;color:var(--ivory);}
+.score-pill.leading{border-color:var(--brass);}
+.icon-btn{
+  background:rgba(0,0,0,0.2);border:1px solid var(--felt-line);color:var(--ivory-dim);
+  border-radius:8px;padding:8px 12px;font-size:13px;
+}
+.icon-btn:hover{color:var(--ivory);border-color:var(--brass);}
+
+.table-stage{
+  position:relative;
+  background: radial-gradient(ellipse at 50% 32%, color-mix(in srgb, var(--felt) 85%, white 8%), var(--felt) 55%, var(--felt-dark) 100%);
+  border:9px solid var(--felt-panel);border-radius:44px;
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.45), 0 16px 34px rgba(0,0,0,0.4);
+  padding:76px 20px 96px;margin-bottom:16px;min-height:400px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+}
+.seat-slot{position:absolute;display:flex;justify-content:center;}
+.seat-slot:empty{display:none;}
+.slot-north{top:16px;left:50%;transform:translateX(-50%);}
+.slot-east{right:16px;top:50%;transform:translateY(-50%);}
+.slot-west{left:16px;top:50%;transform:translateY(-50%);}
+
+.opp-seat{
+  background:rgba(0,0,0,0.24);border:1px solid var(--felt-line);border-radius:12px;
+  padding:10px 16px;text-align:center;min-width:150px;
+}
+.opp-seat.current-turn{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass) inset, 0 0 16px rgba(217,169,78,0.35);}
+.opp-seat .opp-name{font-size:14.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;}
+.opp-seat .opp-name .badge{font-size:10.5px;background:rgba(255,255,255,0.12);color:var(--ivory-dim);padding:1px 7px;border-radius:20px;font-weight:500;}
+.opp-seat .opp-meta{font-size:12.5px;color:var(--ivory-dim);margin-top:3px;}
+.opp-seat .cardback-fan{display:flex;justify-content:center;margin-top:7px;}
+
+.mini-cardback{
+  display:inline-block;width:17px;height:24px;border-radius:3px;margin-left:-7px;
+  background:repeating-linear-gradient(135deg,var(--brass) 0 2px, #8a6a2c 2px 4px);
+  border:1px solid rgba(0,0,0,0.4);
+}
+.mini-cardback:first-child{margin-left:0;}
+
+/* ---------- Card back styles (selectable, extensible) ---------- */
+body[data-cardback="space"] .stock-pile, body[data-cardback="space"] .mini-cardback{
+  background:
+    radial-gradient(circle at 22% 28%, #fff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 68% 18%, #fff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 78% 62%, #fff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 35% 75%, #fff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 55% 45%, #f2e6ff 0 1.4px, transparent 2px),
+    radial-gradient(ellipse at 45% 35%, #2c2064, #150f38 55%, #0a0722 100%);
+  border-color: rgba(224,201,255,0.5) !important;
+}
+body[data-cardback="beach"] .stock-pile, body[data-cardback="beach"] .mini-cardback{
+  background: linear-gradient(180deg, #ffd9a0 0%, #ff9d76 34%, #3ea8c9 36%, #1f6f96 100%);
+  border-color: rgba(255,255,255,0.4) !important;
+}
+body[data-cardback="mountain"] .stock-pile, body[data-cardback="mountain"] .mini-cardback{
+  background: linear-gradient(180deg, #dcedf7 0%, #a9cfe6 42%, #5c7f97 100%);
+  border-color: rgba(255,255,255,0.4) !important;
+}
+
+.center-piles{display:flex;gap:30px;align-items:flex-start;justify-content:center;}
+.pile-block{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.pile-label{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--ivory-dim);}
+.stock-pile{
+  width:84px;height:118px;border-radius:8px;
+  background:repeating-linear-gradient(135deg,var(--brass) 0 6px, #8a6a2c 6px 12px);
+  border:2px solid rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;
+  color:rgba(0,0,0,0.55);font-weight:700;font-size:14px;position:relative;
+  box-shadow:0 4px 10px rgba(0,0,0,0.4);
+}
+.stock-pile.clickable{cursor:pointer;}
+.stock-pile.clickable:hover{filter:brightness(1.08);}
+.stock-pile .count-badge{
+  position:absolute;bottom:-11px;background:var(--ink);color:var(--ivory);
+  font-size:12px;padding:2px 9px;border-radius:10px;border:1px solid var(--brass);
+}
+.discard-pile-wrap{position:relative;width:84px;height:118px;}
+.discard-pile{
+  width:84px;height:118px;border-radius:8px;background:var(--ivory);border:2px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;position:relative;
+  box-shadow:0 4px 10px rgba(0,0,0,0.4);transition:box-shadow .3s ease;
+}
+.discard-pile.empty{background:rgba(255,255,255,0.06);border:2px dashed var(--felt-line);}
+.discard-pile.frozen-red3{box-shadow:0 0 0 3px var(--freeze-red), 0 4px 14px rgba(177,72,58,0.5);}
+.discard-pile.frozen-wild{box-shadow:0 0 0 3px var(--freeze-ice), 0 0 22px rgba(127,184,209,0.55);}
+.discard-pile.frozen-wild::after{
+  content:"❄";position:absolute;top:-12px;right:-12px;background:var(--freeze-ice);color:#0b1e18;
+  width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+.discard-pile.frozen-red3::after{
+  content:"🔒";position:absolute;top:-12px;right:-12px;background:var(--freeze-red);color:var(--ivory);
+  width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;
+}
+.discard-pile .card-count-badge{
+  position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);
+  background:var(--ink);color:var(--ivory);font-size:12px;padding:2px 9px;border-radius:10px;border:1px solid var(--brass);
+}
+.take-pile-btn{
+  margin-top:2px;font-size:12px;padding:6px 11px;border-radius:6px;border:1px solid var(--good);
+  background:rgba(127,174,114,0.15);color:var(--good);font-weight:600;
+}
+.take-pile-btn:hover{background:rgba(127,174,114,0.28);}
+.take-pile-btn:disabled{opacity:0.35;cursor:not-allowed;}
+
+.card{
+  width:64px;height:90px;border-radius:8px;background:var(--ivory);color:var(--ink);
+  position:relative;flex-shrink:0;font-family:'Fraunces',serif;
+  border:1px solid rgba(0,0,0,0.25);box-shadow:0 3px 7px rgba(0,0,0,0.35);
+  user-select:none;
+}
+.card .idx{position:absolute;font-weight:700;font-size:15px;line-height:1;text-align:center;}
+.card .idx.tl{top:5px;left:6px;}
+.card .idx.br{bottom:5px;right:6px;transform:rotate(180deg);}
+.card .idx .pip{display:block;font-size:12px;margin-top:2px;}
+.card .center-pip{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;}
+.card.red{color:var(--card-red);}
+.card.wild{background:linear-gradient(160deg,#efe6c8,var(--ivory));}
+.card.wild::after{content:"★";position:absolute;top:4px;right:6px;font-size:10px;color:var(--brass);}
+.card.black3{outline:2px solid var(--brass);}
+.card.red3{outline:2px solid var(--freeze-red);}
+
+.melds-strip{display:flex;flex-direction:column;gap:6px;min-width:150px;max-width:260px;}
+.meld-group{display:flex;align-items:center;gap:2px;background:rgba(0,0,0,0.14);border-radius:8px;padding:5px 6px;}
+.meld-group.clickable{cursor:pointer;transition:background .15s ease,box-shadow .15s ease;}
+.meld-group.clickable:hover{background:rgba(196,154,69,0.22);box-shadow:0 0 0 1px var(--brass) inset;}
+.meld-group .stack{display:flex;}
+.meld-group .stack .card{width:32px;height:45px;margin-left:-17px;}
+.meld-group .stack .card .idx{font-size:9px;}
+.meld-group .stack .card .idx .pip{font-size:8px;margin-top:0;}
+.meld-group .stack .card .center-pip{font-size:14px;}
+.meld-group .stack .card:first-child{margin-left:0;}
+.meld-group .tag{font-size:10.5px;color:var(--brass-bright);margin-left:6px;font-weight:700;white-space:nowrap;}
+.bonus-row{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--ivory-dim);}
+.bonus-chip{background:rgba(196,154,69,0.15);border:1px solid var(--felt-line);border-radius:20px;padding:3px 9px;}
+
+.team-panels{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:6px;}
+.team-panel{background:rgba(0,0,0,0.12);border:1px solid var(--felt-line);border-radius:10px;padding:10px 14px;min-width:200px;}
+.team-panel h4{margin:0 0 6px;font-size:12px;color:var(--brass-bright);text-transform:uppercase;letter-spacing:0.6px;}
+.team-panel.mine{border-color:var(--brass);}
+
+.staging{
+  min-height:40px;border:1px dashed var(--felt-line);border-radius:10px;padding:8px;margin-bottom:8px;
+  display:flex;gap:14px;flex-wrap:wrap;align-items:center;
+}
+.staging.has-items{border-color:var(--brass);}
+.staging .empty-hint{font-size:12px;color:var(--ivory-dim);}
+.staging .stage-group{display:flex;align-items:center;gap:2px;background:rgba(196,154,69,0.12);border-radius:8px;padding:4px;}
+.staging .stage-group .card{width:32px;height:44px;font-size:11px;}
+.stage-total{
+  margin-left:auto;font-size:12px;color:var(--ivory-dim);
+}
+.stage-total b{color:var(--brass-bright);}
+
+.hand-panel{margin-top:6px;}
+.hand-panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.hand-panel-head .whoami{font-size:15px;font-weight:600;color:var(--ivory);}
+.hand-row{
+  display:flex;gap:8px;flex-wrap:wrap;padding:14px;background:rgba(0,0,0,0.15);
+  border-radius:10px;min-height:110px;justify-content:center;
+}
+.hand-row .card{width:74px;height:104px;cursor:pointer;transition:transform .12s ease;}
+.hand-row .card .idx{font-size:17px;}
+.hand-row .card .idx .pip{font-size:14px;}
+.hand-row .card .center-pip{font-size:34px;}
+.hand-row .card:hover{transform:translateY(-6px);}
+.hand-row .card.selected{transform:translateY(-14px);box-shadow:0 0 0 2px var(--brass),0 8px 14px rgba(0,0,0,0.45);}
+
+.action-bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.action-btn{
+  padding:11px 18px;border-radius:9px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);
+  color:var(--ivory);font-size:13px;font-weight:600;
+}
+.action-btn.primary{background:var(--brass);color:var(--ink);border-color:var(--brass);}
+.action-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.action-btn:not(:disabled):hover{filter:brightness(1.1);}
+
+.status-line{
+  font-size:14px;color:var(--ivory-dim);margin-top:10px;min-height:18px;
+}
+.status-line.warn{color:var(--danger);}
+.status-line.ok{color:var(--good);}
+
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(6,14,11,0.75);z-index:50;
+  align-items:center;justify-content:center;
+}
+.modal-overlay.show{display:flex;}
+.modal-box{
+  background:var(--felt-panel);border:1px solid var(--brass);border-radius:14px;padding:28px 30px;
+  max-width:520px;width:92%;box-shadow:0 20px 50px rgba(0,0,0,0.5);max-height:85vh;overflow-y:auto;
+}
+.modal-box h2{margin:0 0 4px;color:var(--brass-bright);}
+.modal-box p.sub{color:var(--ivory-dim);font-size:13px;margin-bottom:16px;}
+.score-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px;}
+.score-table th,.score-table td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--felt-line);}
+.score-table th{color:var(--ivory-dim);font-weight:500;font-size:11px;text-transform:uppercase;}
+.score-table td.num{font-family:'JetBrains Mono',monospace;text-align:right;}
+.score-table tr.total td{font-weight:700;color:var(--brass-bright);border-top:1px solid var(--brass);}
+.modal-box .action-btn{margin-top:6px;}
+
+@media (max-width: 720px){
+  .brand h1{font-size:36px;}
+  .card{width:38px;height:54px;font-size:12px;}
+  .table-area{gap:14px;padding:14px;}
+  .stock-pile,.discard-pile,.discard-pile-wrap{width:60px;height:84px;}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js"></script>
+</head>
+<body>
+
+<!-- ============ LANDING SCREEN ============ -->
+<div id="landing-screen">
+  <div class="brand">
+    <h1>Canasta</h1>
+    <div class="suit-row">♠ ♥ ♦ ♣</div>
+    <p class="tag">House rules — frozen piles, bonus threes, and a team meld pool.</p>
+  </div>
+  <div class="landing-choices">
+    <button class="landing-btn" id="landing-new-game">
+      <div class="landing-btn-title">New game</div>
+      <div class="landing-btn-sub">Play on this device, or host online for others to join</div>
+    </button>
+    <button class="landing-btn" id="landing-join-game">
+      <div class="landing-btn-title">Join a game</div>
+      <div class="landing-btn-sub">Enter a room code someone sent you</div>
+    </button>
+  </div>
+  <a href="#" id="landing-rules-link" class="rules-toggle" style="display:block;text-align:center;margin-top:22px;">House rules &amp; how this all works ▾</a>
+</div>
+
+<!-- ============ SETUP SCREEN ============ -->
+<div id="setup-screen" style="display:none;">
+  <div class="brand">
+    <h1>Canasta</h1>
+    <div class="suit-row">♠ ♥ ♦ ♣</div>
+    <p class="tag">House rules — frozen piles, bonus threes, and a team meld pool.</p>
+  </div>
+
+  <div class="setup-card">
+    <h2>Card back</h2>
+    <p class="hint">Just how they look on your screen — everyone can pick their own, it's not shared with other players.</p>
+    <div class="count-row" id="cardback-row">
+      <div class="count-btn cardback-btn active" data-cardback="classic">
+        <div class="cardback-swatch classic-swatch"></div>Classic
+      </div>
+      <div class="count-btn cardback-btn" data-cardback="space">
+        <div class="cardback-swatch" style="background:radial-gradient(circle at 22% 28%,#fff 0 1px,transparent 1.6px),radial-gradient(circle at 68% 18%,#fff 0 1px,transparent 1.6px),radial-gradient(circle at 78% 62%,#fff 0 1px,transparent 1.6px),radial-gradient(ellipse at 45% 35%,#2c2064,#150f38 55%,#0a0722 100%);"></div>Space
+      </div>
+      <div class="count-btn cardback-btn" data-cardback="beach">
+        <div class="cardback-swatch" style="background:linear-gradient(180deg,#ffd9a0 0%,#ff9d76 34%,#3ea8c9 36%,#1f6f96 100%);"></div>Beach
+      </div>
+      <div class="count-btn cardback-btn" data-cardback="mountain">
+        <div class="cardback-swatch" style="background:linear-gradient(180deg,#dcedf7 0%,#a9cfe6 42%,#5c7f97 100%);"></div>Mountain
+      </div>
+    </div>
+  </div>
+
+  <div class="setup-card">
+    <h2>How do you want to play?</h2>
+    <p class="hint">Play on this device alone, or host so others can join from their own devices.</p>
+    <div class="count-row" id="mode-row">
+      <div class="count-btn mode-btn active" data-mode="local">This device<small>Local / pass-and-play</small></div>
+      <div class="count-btn mode-btn" data-mode="host">Host online<small>Invite others to join</small></div>
+    </div>
+  </div>
+  <a href="#" id="back-to-landing" class="rules-toggle" style="display:block;text-align:center;margin:-6px 0 18px;">← Back</a>
+
+  <div class="setup-card" id="turn-settings-card" style="display:none;">
+    <h2>Network relay</h2>
+    <div style="display:flex;align-items:center;gap:10px;padding:4px 0 2px;">
+      <span id="turn-simple-dot" style="width:10px;height:10px;border-radius:50%;background:var(--felt-line);flex-shrink:0;transition:background .2s ease;"></span>
+      <span id="turn-simple-text" style="font-size:14px;color:var(--ivory);"></span>
+    </div>
+    <div class="rules-toggle" id="turn-advanced-toggle" style="margin-top:8px;">Advanced settings ▾</div>
+
+    <div id="turn-advanced-panel" style="display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--felt-line);">
+      <p class="hint" id="turn-role-hint">A direct connection works when both players are on the same network, or neither is behind a strict firewall. If a connection just hangs at "Connecting…", the <b>host</b> setting this up is normally enough to fix it — the other player usually doesn't need to do anything here. <span class="rules-toggle" id="turn-help-toggle" style="display:inline;margin:0;">How do I get one? ▾</span></p>
+      <div class="rules-panel" id="turn-help-panel">
+        Sign up for a free account at <b>metered.ca</b> (no credit card) and create a TURN credential from their dashboard — it gives you a server URL, username, and password meant to be used right in an app like this one. Since this game only ever sends small text messages, never audio or video, even their smallest free tier comfortably covers a lot of games. Paste what they give you below; it's saved on this device only, so you'll only need to do this once.<br><br>
+        Only the <b>host</b> normally needs to do this — a relay offered by either side is usually enough for both players to connect through it, and firewalls almost always allow the outbound connection needed to reach it. If connections still fail with only the host configured (rare), the other player can add their own here too. If port 80 doesn't work, try the same address with <b>:443</b> instead — it blends in as ordinary web traffic and gets through stricter firewalls more often.
+      </div>
+      <label style="font-size:12px;color:var(--ivory-dim);display:block;margin:12px 0 4px;">TURN server URL <span style="opacity:0.7;">(e.g. turn:standard.relay.metered.ca:80)</span></label>
+      <input type="text" id="turn-url-input" style="width:100%;padding:9px;border-radius:6px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);color:var(--ivory);font-size:13px;">
+      <label style="font-size:12px;color:var(--ivory-dim);display:block;margin:10px 0 4px;">Username</label>
+      <input type="text" id="turn-username-input" style="width:100%;padding:9px;border-radius:6px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);color:var(--ivory);font-size:13px;">
+      <label style="font-size:12px;color:var(--ivory-dim);display:block;margin:10px 0 4px;">Credential (password)</label>
+      <input type="text" id="turn-credential-input" style="width:100%;padding:9px;border-radius:6px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);color:var(--ivory);font-size:13px;">
+      <button class="action-btn" id="turn-save-btn" style="margin-top:12px;">Save</button>
+      <button class="icon-btn" id="turn-clear-btn" style="margin-top:12px;">Clear</button>
+      <div class="status-line" id="turn-status-line"></div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px dashed var(--felt-line);">
+        <p class="hint" style="margin:0 0 8px;">Hosting from more than one device? Generate a snippet from what's filled in above, and paste it into the file once — every device using that copy will have it automatically, no re-entering per browser.</p>
+        <button class="action-btn" id="turn-generate-embed-btn">Generate embeddable code</button>
+        <div id="turn-embed-output-wrap" style="display:none;margin-top:10px;">
+          <textarea id="turn-embed-output" readonly rows="3" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--brass);background:rgba(0,0,0,0.25);color:var(--ivory);font-family:'JetBrains Mono',monospace;font-size:10.5px;resize:vertical;"></textarea>
+          <p class="hint" style="margin:8px 0 0;">Paste this as the value of <code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px;">EMBEDDED_TURN_DEFAULT</code> near the top of the file's script — search for that name to find it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="local-and-host-config">
+  <div class="setup-card">
+    <h2>Number of players</h2>
+    <p class="hint">2 or 3 play individually. 4 play as two teams of partners, sharing one meld pool per team.</p>
+    <div class="count-row" id="count-row">
+      <div class="count-btn" data-n="2">2 Players<small>13 cards each · solo</small></div>
+      <div class="count-btn" data-n="3">3 Players<small>11 cards each · solo</small></div>
+      <div class="count-btn" data-n="4">4 Players<small>11 cards each · teams</small></div>
+    </div>
+  </div>
+
+  <div class="setup-card">
+    <h2>Seats</h2>
+    <p class="hint" id="seats-hint">Mark each seat Human or Computer. Team partners sit across from each other.</p>
+    <div class="seats" id="seats-container"></div>
+    <div id="seating-diagram-wrap"></div>
+  </div>
+
+  <div class="setup-card" id="room-card" style="display:none;">
+    <h2>Room</h2>
+    <p class="hint">Create your room, then send the code to whoever's joining — they just type it in, no copying blocks of text.</p>
+    <button class="action-btn primary" id="create-room-btn" style="width:100%;">Create room</button>
+    <div id="room-code-display" style="display:none;margin-top:14px;text-align:center;">
+      <div style="font-size:11px;color:var(--ivory-dim);text-transform:uppercase;letter-spacing:0.6px;">Room code</div>
+      <div id="room-code-value" style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--brass-bright);letter-spacing:1px;margin:6px 0;"></div>
+      <button class="icon-btn" id="room-copy-btn">Copy code</button>
+    </div>
+    <div class="status-line" id="room-status-line"></div>
+  </div>
+
+  <div class="setup-card" id="depth-card">
+    <h2>Computer difficulty</h2>
+    <p class="hint">Controls how deeply the computer "thinks" before each move — higher levels evaluate more of the table and play more strategically.</p>
+    <div class="depth-block">
+      <label>Think depth <span class="depth-val" id="depth-val">3 — Skilled</span></label>
+      <input type="range" min="1" max="5" value="3" id="depth-slider">
+      <div class="depth-labels"><span>Casual</span><span>Sharp</span><span>Ruthless</span></div>
+    </div>
+  </div>
+
+  <div class="setup-card">
+    <h2>Opening meld minimum</h2>
+    <p class="hint">How many points a team's first meld must be worth before they've "opened." Standard rises with score (50 → 90 → 120); you can fix it at any value instead, including 0 for no minimum.</p>
+    <div class="count-row" id="threshold-row">
+      <div class="count-btn threshold-btn active" data-t="standard">Standard<small>50 / 90 / 120 by score</small></div>
+      <div class="count-btn threshold-btn" data-t="0">0<small>No minimum</small></div>
+      <div class="count-btn threshold-btn" data-t="15">15<small>Fixed</small></div>
+      <div class="count-btn threshold-btn" data-t="30">30<small>Fixed</small></div>
+      <div class="count-btn threshold-btn" data-t="50">50<small>Fixed</small></div>
+      <div class="count-btn threshold-btn" data-t="90">90<small>Fixed</small></div>
+      <div class="count-btn threshold-btn" data-t="120">120<small>Fixed</small></div>
+    </div>
+  </div>
+
+  <button class="start-btn" id="start-btn">Deal the cards</button>
+  </div>
+
+  <div id="join-config" style="display:none;">
+    <div class="setup-card" id="join-step1-card">
+      <h2>Join an online game</h2>
+      <p class="hint">Enter the room code your host sent you. Once you're connected, you'll pick your seat.</p>
+      <label style="font-size:12px;color:var(--ivory-dim);display:block;margin-bottom:4px;">Your name</label>
+      <input type="text" id="join-name-input" value="Guest" style="width:100%;margin-bottom:14px;padding:9px;border-radius:6px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);color:var(--ivory);font-size:14px;">
+      <label style="font-size:12px;color:var(--ivory-dim);display:block;margin-bottom:4px;">Room code</label>
+      <input type="text" id="join-room-input" placeholder="cnst-XXXXX" style="width:100%;padding:9px;border-radius:6px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);color:var(--ivory);font-size:15px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">
+      <button class="action-btn primary" id="join-generate-btn" style="margin-top:12px;width:100%;">Connect</button>
+      <div class="status-line" id="join-status-line"></div>
+    </div>
+
+    <div class="setup-card" id="seat-picker-card" style="display:none;">
+      <h2>Choose your seat</h2>
+      <p class="hint">Tap an open position at the table.</p>
+      <div class="seats" id="seat-picker-list"></div>
+      <div class="status-line" id="seat-picker-status"></div>
+    </div>
+
+    <div class="setup-card" id="join-waiting-card" style="display:none;">
+      <p class="hint" style="margin:0;">You're seated! Waiting for your host to start the game…</p>
+    </div>
+
+    <a href="#" id="back-to-landing-join" class="rules-toggle" style="display:block;text-align:center;margin-top:6px;">← Back</a>
+  </div>
+
+</div>
+
+<!-- ============ GAME SCREEN ============ -->
+<div id="game-screen">
+  <div class="topbar-mini">
+    <div class="round-info" id="round-info">Round 1</div>
+    <div class="score-pills" id="score-pills"></div>
+    <button class="icon-btn" id="game-menu-btn">Menu</button>
+  </div>
+
+  <div class="table-stage" id="table-stage">
+    <div class="seat-slot slot-north" id="slot-north"></div>
+    <div class="seat-slot slot-east" id="slot-east"></div>
+    <div class="seat-slot slot-west" id="slot-west"></div>
+
+    <div class="center-piles">
+      <div class="pile-block">
+        <div class="pile-label">Stock</div>
+        <div class="stock-pile" id="stock-pile"><span class="count-badge" id="stock-count">0</span></div>
+      </div>
+      <div class="pile-block">
+        <div class="pile-label">Discard</div>
+        <div class="discard-pile-wrap">
+          <div class="discard-pile empty" id="discard-pile"></div>
+          <span class="card-count-badge" id="discard-count" style="display:none;">0</span>
+        </div>
+        <button class="take-pile-btn" id="take-pile-btn" style="display:none;">Take pile</button>
+      </div>
+    </div>
+
+    <div class="team-panels" id="team-panels"></div>
+  </div>
+
+  <div class="hand-panel">
+    <div class="hand-panel-head">
+      <div class="whoami" id="whoami">Your hand</div>
+      <button class="icon-btn" id="sort-btn">Sort</button>
+    </div>
+    <div class="status-line" id="obligation-banner" style="display:none;"></div>
+    <div class="staging" id="staging"><span class="empty-hint">Select cards from your hand and press "Meld selected" to stage a group here.</span></div>
+    <div class="hand-row" id="hand-row"></div>
+    <div class="action-bar">
+      <button class="action-btn primary" id="draw-btn">Draw from stock</button>
+      <button class="action-btn" id="meld-btn" disabled>Meld selected</button>
+      <button class="action-btn" id="unstage-btn" disabled>Return staged to hand</button>
+      <button class="action-btn" id="undo-pile-btn" style="display:none;">Return pile to table</button>
+      <button class="action-btn" id="discard-btn" disabled>Discard selected</button>
+    </div>
+    <div class="status-line" id="status-line"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<script>
+/* =========================================================================
+   ENGINE — pure rules functions (unit-tested standalone before integration)
+   ========================================================================= */
+const SUITS = ['S','H','D','C'];
+const RANKS = ['4','5','6','7','8','9','10','J','Q','K','A','2','3'];
+const SUIT_SYMBOL = {S:'♠',H:'♥',D:'♦',C:'♣'};
+let _uid = 0;
+const nextId = () => 'c' + (_uid++);
+
+function makeCard(rank, suit){ return { id: nextId(), rank, suit: suit||null, isJoker: rank==='JOKER' }; }
+function isWild(c){ return c.rank==='2' || c.rank==='JOKER'; }
+function isBlack3(c){ return c.rank==='3' && (c.suit==='S'||c.suit==='C'); }
+function isRed3(c){ return c.rank==='3' && (c.suit==='H'||c.suit==='D'); }
+function cardPoints(c){
+  if(c.rank==='JOKER') return 50;
+  if(c.rank==='A'||c.rank==='2') return 20;
+  if(['K','Q','J','10','9','8'].includes(c.rank)) return 10;
+  if(['7','6','5','4'].includes(c.rank)) return 5;
+  if(c.rank==='3') return 100;
+  return 0;
+}
+function createDeck(){
+  const deck=[];
+  for(let d=0; d<2; d++){
+    for(const suit of SUITS){ for(const rank of RANKS){ deck.push(makeCard(rank,suit)); } }
+    deck.push(makeCard('JOKER')); deck.push(makeCard('JOKER'));
+  }
+  return deck;
+}
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr;
+}
+function validateMeldGroup(rank, cards){
+  if(rank==='3') return {ok:false, reason:'Threes cannot be melded as a normal group.'};
+  const wilds = cards.filter(isWild);
+  const naturals = cards.filter(c=>!isWild(c) && c.rank===rank);
+  if(wilds.length+naturals.length !== cards.length) return {ok:false, reason:'All cards must be wild or match the rank.'};
+  if(naturals.length<1) return {ok:false, reason:'A meld needs at least one natural card.'};
+  if(wilds.length>3) return {ok:false, reason:'A meld may contain at most 3 wild cards.'};
+  if(cards.length<3) return {ok:false, reason:'A meld needs at least 3 cards.'};
+  return {ok:true};
+}
+// Validates adding `newCards` to a rank group that may already have `existingCards` (either already
+// committed to the team's table meld, or staged earlier this same turn). Once a meld of 3+ already
+// exists for that rank, additional matching cards can be added one or two at a time — they don't need
+// to independently form a group of 3.
+function validateMeldAddition(rank, existingCards, newCards){
+  if(rank==='3') return {ok:false, reason:'Threes cannot be melded as a normal group.'};
+  if(newCards.length===0) return {ok:false, reason:'Select at least one card.'};
+  const wildsNew = newCards.filter(isWild);
+  const naturalsNew = newCards.filter(c=>!isWild(c) && c.rank===rank);
+  if(wildsNew.length+naturalsNew.length !== newCards.length) return {ok:false, reason:'All cards must be wild or match the rank.'};
+  const totalCards = existingCards.length + newCards.length;
+  const totalWilds = existingCards.filter(isWild).length + wildsNew.length;
+  const totalNaturals = totalCards - totalWilds;
+  if(existingCards.length===0 && totalCards<3) return {ok:false, reason:'A new meld needs at least 3 cards — select more, or add to an existing meld of this rank instead.'};
+  if(totalNaturals<1) return {ok:false, reason:'A meld needs at least one natural card.'};
+  if(totalWilds>3) return {ok:false, reason:'A meld may contain at most 3 wild cards in total.'};
+  return {ok:true};
+}
+function meldPointValue(cards){ return cards.reduce((s,c)=>s+cardPoints(c),0); }
+function isCanasta(cards){ return cards.length>=7; }
+function canastaType(cards){ return cards.filter(isWild).length===0 ? 'natural' : 'mixed'; }
+function initialMeldThreshold(teamScore){
+  if(typeof G !== 'undefined' && G && G.thresholdMode !== 'standard' && typeof G.thresholdMode === 'number'){
+    return G.thresholdMode;
+  }
+  if(teamScore>=3000) return 120;
+  if(teamScore>=1500) return 90;
+  return 50;
+}
+function canTakePile(hand, topRank, freeze, teamHasMeldOfRank){
+  const naturals = hand.filter(c=>!isWild(c) && c.rank===topRank);
+  if(freeze==='wild') return naturals.length>=2; // hard freeze: must use hand only, no table-meld assist
+  if(naturals.length>=2) return true; // forms a brand-new 3-card meld with the pile's top card
+  if(teamHasMeldOfRank) return true; // already-established meld -- the pile's top card alone can extend it
+  return false;
+}
+function topCardBlocksTake(topCard){ return isWild(topCard) || isRed3(topCard); }
+function freezeAfterDiscard(currentFreeze, discardedCard){
+  if(isWild(discardedCard)) return 'wild';
+  if(isRed3(discardedCard)) return currentFreeze==='wild' ? 'wild' : 'red3';
+  return currentFreeze;
+}
+function scoreTeamHand(team, playersHandsAtEnd){
+  let score=0, canastaCount=0;
+  for(const rank of Object.keys(team.melds)){
+    const g=team.melds[rank]; if(!g||!g.length) continue;
+    score += meldPointValue(g);
+    if(isCanasta(g)){ canastaCount++; score += canastaType(g)==='natural'?500:300; }
+  }
+  if(team.black3Count>0) score += team.black3Count===4?800:team.black3Count*100;
+  if(team.red3MeldedCount>0) score += team.red3MeldedCount===4?800:team.red3MeldedCount*100;
+  let stuckRed3=0, remainingHandValue=0;
+  for(const hand of playersHandsAtEnd){
+    for(const c of hand){ if(isRed3(c)){ stuckRed3++; continue; } remainingHandValue += cardPoints(c); }
+  }
+  score -= stuckRed3*100;
+  score -= remainingHandValue;
+  if(team.wentOut) score += team.wentOutConcealed?200:100;
+  return {score, canastaCount, stuckRed3, remainingHandValue};
+}
+
+/* =========================================================================
+   GAME STATE
+   ========================================================================= */
+var G = null; // main game state, built by setupGame() (var, not let, so it's reachable as a global property)
+
+function teamHasMeldOfRank(team, rank){ return !!(team.melds[rank] && team.melds[rank].length>0); }
+
+// --- Public card-counting (never reads hand contents) ---
+function revealCards(cards){
+  for(const c of cards) G.revealedCards.set(c.id, c.rank);
+}
+function rankRevealedCount(rank){
+  let n = 0;
+  for(const r of G.revealedCards.values()) if(r===rank) n++;
+  return n;
+}
+function teamCanastaCount(team){
+  let n=0;
+  for(const r of Object.keys(team.melds)) if(isCanasta(team.melds[r])) n++;
+  return n;
+}
+function log(msg, isYou){
+  G.logEntries.push({msg, isYou});
+}
+
+function setupGame(numPlayers, seatConfigs, aiDepth, thresholdMode){
+  _uid = 0;
+  const seats = seatConfigs.map((sc,i)=>({
+    id:i, name:sc.name, isHuman:sc.isHuman, teamId: null,
+  }));
+  // team assignment: 4p -> partners across (0&2, 1&3). Otherwise everyone solo.
+  const teams = [];
+  if(numPlayers===4){
+    teams.push({id:0,name:'Team A',players:[0,2],melds:{},black3Count:0,red3MeldedCount:0,wentOut:false,wentOutConcealed:false,score:0});
+    teams.push({id:1,name:'Team B',players:[1,3],melds:{},black3Count:0,red3MeldedCount:0,wentOut:false,wentOutConcealed:false,score:0});
+    seats[0].teamId=0; seats[2].teamId=0; seats[1].teamId=1; seats[3].teamId=1;
+  } else {
+    for(let i=0;i<numPlayers;i++){
+      teams.push({id:i,name:seats[i].name,players:[i],melds:{},black3Count:0,red3MeldedCount:0,wentOut:false,wentOutConcealed:false,score:0});
+      seats[i].teamId=i;
+    }
+  }
+  G = {
+    numPlayers, seats, teams,
+    hands:{}, deck:[], discardPile:[], freeze:'none',
+    turnSeat:0, phase:'draw', // 'draw' | 'main' | 'over'
+    pendingObligationRank:null,
+    pileTakeSnapshot:null, // {cards, freezeBefore} — lets the current player undo a pile take this turn
+    stageBuffer:[], // [{rank, cards:[card,...]}]
+    selectedCardIds:[],
+    aiDepth,
+    thresholdMode: thresholdMode==null ? 'standard' : thresholdMode, // 'standard' or a fixed number (incl. 0)
+    logEntries:[],
+    roundNum:1,
+    gameOver:false,
+    dealSize: numPlayers===2?13:11,
+  };
+  startRound();
+}
+
+function startRound(){
+  G.deck = shuffle(createDeck());
+  G.discardPile = [];
+  G.freeze = 'none';
+  G.pendingObligationRank = null;
+  G.pileTakeSnapshot = null;
+  G.stageBuffer = [];
+  G.selectedCardIds = [];
+  G.revealedCards = new Map(); // card id -> rank, for every card ever melded or discarded this round.
+  // This is the AI's entire memory of "what's been seen" -- used for legitimate card-counting,
+  // never for looking at any hand's actual contents.
+  for(const t of G.teams){ t.melds={}; t.black3Count=0; t.red3MeldedCount=0; t.wentOut=false; t.wentOutConcealed=false; }
+  for(const s of G.seats) G.hands[s.id] = [];
+
+  for(const s of G.seats){
+    for(let i=0;i<G.dealSize;i++) G.hands[s.id].push(G.deck.pop());
+  }
+  // Auto-meld any black 3s dealt into initial hands
+  for(const s of G.seats) autoMeldBlack3sInHand(s.id);
+
+  // Flip a valid starting discard (skip wild/red3/black3 - shouldn't be any black3 left anyway)
+  const setAside=[];
+  let starter=null;
+  while(G.deck.length){
+    const c = G.deck.pop();
+    if(isWild(c) || isRed3(c) || isBlack3(c)){ setAside.push(c); continue; }
+    starter = c; break;
+  }
+  if(starter) G.discardPile.push(starter);
+  if(setAside.length){ G.deck.push(...setAside); shuffle(G.deck); }
+
+  G.turnSeat = (G.roundNum-1) % G.numPlayers; // rotate who opens each round
+  G.phase='draw';
+  log(`— Round ${G.roundNum} dealt. ${G.dealSize} cards each. —`, false);
+  refreshAll();
+  maybeRunAI();
+}
+
+function autoMeldBlack3sInHand(seatId){
+  const seat = G.seats[seatId];
+  const team = G.teams.find(t=>t.id===seat.teamId);
+  let hand = G.hands[seatId];
+  let found = true;
+  while(found){
+    found=false;
+    for(let i=0;i<hand.length;i++){
+      if(isBlack3(hand[i])){
+        hand.splice(i,1);
+        team.black3Count++;
+        log(`${seat.name} melds a black 3 (+100) and draws a replacement.`, false);
+        if(G.deck.length){ const rep = G.deck.pop(); hand.push(rep); if(isBlack3(rep)) found=true; }
+        break;
+      }
+    }
+  }
+}
+
+/* ---- Draw / take pile ---- */
+function drawFromStock(seatId){
+  if(G.deck.length===0){ endRound('stock-exhausted'); return; }
+  autoMeldBlack3sInHand(seatId); // safety, normally not needed pre-draw
+  const c = G.deck.pop();
+  const seat = G.seats[seatId];
+  const team = G.teams.find(t=>t.id===seat.teamId);
+  if(isBlack3(c)){
+    team.black3Count++;
+    log(`${seat.name} draws a black 3 — instant meld (+100), redraws.`, seat.isHuman);
+    if(G.deck.length===0){ endRound('stock-exhausted'); return; }
+    return drawFromStock(seatId); // chain
+  }
+  G.hands[seatId].push(c);
+  log(`${seat.name} draws from stock.`, seat.isHuman);
+  G.phase='main';
+}
+
+function takePile(seatId){
+  const seat = G.seats[seatId];
+  const team = G.teams.find(t=>t.id===seat.teamId);
+  const hand = G.hands[seatId];
+  const top = G.discardPile[G.discardPile.length-1];
+  if(!top || topCardBlocksTake(top)) return false;
+  const eligible = canTakePile(hand, top.rank, G.freeze, teamHasMeldOfRank(team, top.rank));
+  if(!eligible) return false;
+  G.pileTakeSnapshot = { cards: G.discardPile.slice(), freezeBefore: G.freeze };
+  G.hands[seatId] = hand.concat(G.discardPile);
+  const pileSize = G.discardPile.length;
+  G.discardPile = [];
+  G.freeze = 'none';
+  G.pendingObligationRank = top.rank;
+  G.phase='main';
+  const autoStaged = autoStageObligation(seatId, top.rank);
+  if(autoStaged){
+    log(`${seat.name} takes the pile (${pileSize} card${pileSize===1?'':'s'}) and automatically melds the rank ${top.rank} it was taken on.`, seat.isHuman);
+  } else {
+    log(`${seat.name} takes the pile (${pileSize} card${pileSize===1?'':'s'}, rank ${top.rank}) — must complete that meld this turn.`, seat.isHuman);
+  }
+  return true;
+}
+
+// Automatically stages the minimum cards needed to satisfy a pile-take obligation for `rank`:
+// just 1 natural if the team already has a meld of that rank (extension), or the 3 naturals that
+// justified the take if it's a brand-new meld. Any extra matching naturals stay in hand so the
+// player can still choose whether to add them. Returns true if the obligation is now satisfied.
+function autoStageObligation(seatId, rank){
+  const team = G.teams.find(t=>t.id===G.seats[seatId].teamId);
+  const hand = G.hands[seatId];
+  const naturals = hand.filter(c=>!isWild(c) && c.rank===rank);
+  const committed = team.melds[rank] || [];
+  const stagedSoFar = G.stageBuffer.filter(g=>g.rank===rank).reduce((n,g)=>n+g.cards.length,0);
+  const existingCount = committed.length + stagedSoFar;
+  if(naturals.length===0) return false;
+  const needed = existingCount>0 ? 1 : Math.min(3, naturals.length);
+  if(existingCount===0 && naturals.length<3) return false; // shouldn't happen given take eligibility, safety only
+  const res = stageMeld(seatId, rank, naturals.slice(0, needed).map(c=>c.id));
+  return res.ok;
+}
+
+function undoTakePile(seatId){
+  if(!G.pileTakeSnapshot) return false;
+  unstageAll(seatId); // return any staged groups (including partial obligation attempts) to hand
+  const snap = G.pileTakeSnapshot;
+  const takenIds = new Set(snap.cards.map(c=>c.id));
+  G.hands[seatId] = G.hands[seatId].filter(c=>!takenIds.has(c.id));
+  G.discardPile = snap.cards;
+  G.freeze = snap.freezeBefore;
+  G.pendingObligationRank = null;
+  G.pileTakeSnapshot = null;
+  G.phase = 'draw';
+  const seat = G.seats[seatId];
+  log(`${seat.name} returns the pile to the table and draws from stock instead.`, seat.isHuman);
+  return true;
+}
+
+/* ---- Melding (staged buffer) ---- */
+function stageMeld(seatId, rank, cardIds){
+  const hand = G.hands[seatId];
+  const cards = cardIds.map(id=>hand.find(c=>c.id===id)).filter(Boolean);
+  if(cards.length !== cardIds.length) return {ok:false, reason:'One or more selected cards were not found in hand.'};
+  const team = G.teams.find(t=>t.id===G.seats[seatId].teamId);
+  const committed = team.melds[rank] || [];
+  const stagedSoFarThisTurn = G.stageBuffer.filter(g=>g.rank===rank).reduce((arr,g)=>arr.concat(g.cards), []);
+  const existingCards = committed.concat(stagedSoFarThisTurn);
+  const v = validateMeldAddition(rank, existingCards, cards);
+  if(!v.ok) return {ok:false, reason:v.reason};
+  // remove from hand, push to buffer
+  G.hands[seatId] = hand.filter(c=>!cardIds.includes(c.id));
+  G.stageBuffer.push({rank, cards, seatId});
+  return {ok:true};
+}
+function unstageAll(seatId){
+  for(const grp of G.stageBuffer){
+    G.hands[grp.seatId].push(...grp.cards);
+  }
+  G.stageBuffer = [];
+}
+function stageBufferTotalValue(){
+  return G.stageBuffer.reduce((s,g)=>s+meldPointValue(g.cards),0);
+}
+function commitStageBuffer(teamId){
+  const team = G.teams.find(t=>t.id===teamId);
+  for(const grp of G.stageBuffer){
+    if(!team.melds[grp.rank]) team.melds[grp.rank]=[];
+    team.melds[grp.rank].push(...grp.cards);
+    revealCards(grp.cards);
+  }
+  G.stageBuffer = [];
+}
+
+/* ---- Discard / end turn ---- */
+function attemptEndTurn(seatId, discardCardId){
+  const seat = G.seats[seatId];
+  const team = G.teams.find(t=>t.id===seat.teamId);
+  const threshold = initialMeldThreshold(team.score);
+  const bufferVal = stageBufferTotalValue();
+  const teamOpened = Object.keys(team.melds).length>0;
+
+  if(!teamOpened && bufferVal > 0 && bufferVal < threshold){
+    return {ok:false, reason:`Your team's opening meld needs ${threshold} pts (staged: ${bufferVal}). Add more, or return staged cards to hand to skip melding this turn.`};
+  }
+  if(G.pendingObligationRank){
+    const satisfiedByBuffer = G.stageBuffer.some(g=>g.rank===G.pendingObligationRank);
+    if(!satisfiedByBuffer){
+      return {ok:false, reason:`You took the pile on rank ${G.pendingObligationRank} — you must complete that meld before discarding.`};
+    }
+  }
+
+  // A team may never go out (empty a hand completely) without at least one completed canasta —
+  // whether that canasta was already on the table, or is only completed by what's staged this turn.
+  const hand = G.hands[seatId];
+  const wouldGoOutByMelding = hand.length===0; // fully melded away, nothing left to discard
+  const wouldGoOutByDiscard = !wouldGoOutByMelding && discardCardId!=null && hand.length===1; // last card
+  if(wouldGoOutByMelding || wouldGoOutByDiscard){
+    const alreadyHasCanasta = teamCanastaCount(team) > 0;
+    const bufferCompletesCanasta = wouldStageBufferCompleteCanasta(team);
+    if(!alreadyHasCanasta && !bufferCompletesCanasta){
+      return {ok:false, reason:'Your team needs at least one completed canasta before going out. Keep a card in hand instead, or return staged cards to hand and meld differently.'};
+    }
+  }
+
+  // Commit staged melds
+  commitStageBuffer(team.id);
+  G.pendingObligationRank = null;
+  G.pileTakeSnapshot = null;
+
+  if(hand.length===0){
+    // went out purely by melding, no discard available/needed
+    finishGoingOut(seatId, true);
+    return {ok:true};
+  }
+  if(discardCardId==null) return {ok:false, reason:'Select a card to discard.'};
+  const card = hand.find(c=>c.id===discardCardId);
+  if(!card) return {ok:false, reason:'Card not found in hand.'};
+  G.hands[seatId] = hand.filter(c=>c.id!==discardCardId);
+  G.discardPile.push(card);
+  revealCards([card]);
+  G.freeze = freezeAfterDiscard(G.freeze, card);
+  log(`${seat.name} discards ${cardLabel(card)}.`, seat.isHuman);
+
+  if(G.hands[seatId].length===0){
+    finishGoingOut(seatId, false);
+    return {ok:true};
+  }
+  advanceTurn();
+  return {ok:true};
+}
+
+// Would committing the currently staged melds complete (or newly form) a canasta for this team?
+function wouldStageBufferCompleteCanasta(team){
+  const ranksTouched = new Set(G.stageBuffer.map(g=>g.rank));
+  for(const rank of ranksTouched){
+    const committed = team.melds[rank] || [];
+    const staged = G.stageBuffer.filter(g=>g.rank===rank).reduce((arr,g)=>arr.concat(g.cards), []);
+    if(isCanasta(committed.concat(staged))) return true;
+  }
+  return false;
+}
+
+function finishGoingOut(seatId, concealed){
+  const seat = G.seats[seatId];
+  const team = G.teams.find(t=>t.id===seat.teamId);
+  team.wentOut = true;
+  team.wentOutConcealed = concealed;
+  log(`${seat.name} goes out${concealed?' (concealed — no discard needed)':''}!`, seat.isHuman);
+  endRound('went-out');
+}
+
+function advanceTurn(){
+  G.turnSeat = (G.turnSeat+1) % G.numPlayers;
+  G.phase='draw';
+  G.selectedCardIds=[];
+  // NOTE: deliberately no refreshAll()/maybeRunAI() here — the top-level caller (dispatchAction
+  // or runAITurn) does that exactly once after the whole action completes, so a turn ending
+  // never schedules the next AI move twice.
+}
+
+/* ---- Round / game end & scoring ---- */
+function endRound(reason){
+  G.phase='over';
+  const summaries = [];
+  for(const team of G.teams){
+    const hands = team.players.map(pid=>G.hands[pid]);
+    const r = scoreTeamHand(team, hands);
+    team.score += r.score;
+    summaries.push({team, roundScore:r.score, canastaCount:r.canastaCount, total:team.score});
+  }
+  showRoundSummary(reason, summaries);
+  G.gameOver = G.teams.some(t=>t.score>=5000);
+  // NOTE: no refreshAll() here either, for the same reason as advanceTurn() above.
+}
+
+/* =========================================================================
+   AI
+   ========================================================================= */
+function aiHandGroupedByRank(hand){
+  const map={};
+  for(const c of hand){ if(c.rank==='3') continue; const k=isWild(c)?'__WILD__':c.rank; (map[k]=map[k]||[]).push(c); }
+  return map;
+}
+
+function aiTakeAllRed3AndBlack3(seatId){
+  // AI may voluntarily meld a red 3 it's holding if it helps (simple: always meld standalone red3 groups of exactly itself? not valid meld alone)
+  // Red 3s cannot meld alone (need 3 of a rank) in this variant they're melded individually as bonus (like black3).
+  // We treat a lone red3 meld as a special one-card bonus action (distinct from rank-grouping).
+}
+
+function runAITurn(seatId){
+  // Defensive guard: a scheduled AI turn should safely no-op if the game has moved on by the
+  // time it actually fires (round/game ended, a new round started, or it's genuinely no longer
+  // this seat's turn) rather than assume its captured seatId is still valid.
+  if(!G || G.phase==='over') return;
+  const seat = G.seats[seatId];
+  if(!seat || seat.isHuman || G.turnSeat!==seatId) return;
+  const team = G.teams.find(t=>t.id===seat.teamId);
+  const depth = G.aiDepth;
+
+  // --- Voluntary red3 melds before drawing (bonus action, doesn't consume turn) ---
+  meldStandaloneRed3s(seatId);
+
+  // --- Draw decision ---
+  const hand = G.hands[seatId];
+  const top = G.discardPile[G.discardPile.length-1];
+  let took = false;
+  if(top && !topCardBlocksTake(top)){
+    const eligible = canTakePile(hand, top.rank, G.freeze, teamHasMeldOfRank(team, top.rank));
+    if(eligible){
+      const pileUseful = evaluatePileUsefulness(seatId, top.rank);
+      const eagerness = (6-depth)*0.12; // low depth AI takes piles more indiscriminately
+      const takeScore = pileUseful + eagerness;
+      const stockRemainingRatio = G.deck.length / 108;
+      const lateGamePenalty = (depth>=3 && G.discardPile.length>6 && stockRemainingRatio<0.15) ? 0.4 : 0;
+      if(takeScore - lateGamePenalty > 0.35){
+        takePile(seatId);
+        took = true;
+      }
+    }
+  }
+  if(!took) drawFromStock(seatId);
+  if(G.phase==='over') return;
+
+  meldStandaloneRed3s(seatId);
+
+  // --- Meld decision ---
+  aiBuildAndStageMelds(seatId, depth);
+
+  // Ensure obligation satisfied if pile was taken
+  if(G.pendingObligationRank && !G.stageBuffer.some(g=>g.rank===G.pendingObligationRank)){
+    aiForceObligationMeld(seatId, G.pendingObligationRank);
+  }
+
+  // If team hasn't opened and buffer insufficient, try to add more groups (depth-based patience)
+  const threshold = initialMeldThreshold(team.score);
+  const teamOpened = Object.keys(team.melds).length>0;
+  if(!teamOpened && stageBufferTotalValue() > 0 && stageBufferTotalValue() < threshold && depth>=3){
+    aiPadMeldsForThreshold(seatId, threshold);
+  }
+  if(!teamOpened && stageBufferTotalValue() > 0 && stageBufferTotalValue() < threshold){
+    if(G.pendingObligationRank){
+      // Taking the pile pre-opening backed the AI into a corner: the mandatory meld can't
+      // clear the opening bar on its own. Undo the take and just draw from stock instead.
+      undoTakePile(seatId);
+      drawFromStock(seatId);
+      if(G.phase==='over') return;
+      aiBuildAndStageMelds(seatId, depth);
+      if(!Object.keys(team.melds).length && stageBufferTotalValue() > 0 && stageBufferTotalValue() < threshold){
+        unstageAll(seatId);
+      }
+    } else {
+      unstageAll(seatId);
+    }
+  }
+
+  // --- Discard decision ---
+  const discardId = aiChooseDiscard(seatId, depth);
+  let res = attemptEndTurn(seatId, discardId);
+  if(!res.ok){
+    // fallback: try any other card if the chosen one failed validation for some reason
+    const anyCard = G.hands[seatId][0];
+    if(anyCard) res = attemptEndTurn(seatId, anyCard.id);
+  }
+  if(!res.ok){
+    // Guaranteed-progress safety valve: clear any staged melds and, as a last resort, any
+    // pile-take obligation, so the turn can never soft-lock. This should be extremely rare.
+    unstageAll(seatId);
+    G.pendingObligationRank = null;
+    G.pileTakeSnapshot = null;
+    const fallbackCard = G.hands[seatId] && G.hands[seatId][0];
+    if(fallbackCard) attemptEndTurn(seatId, fallbackCard.id);
+  }
+  // This is the single top-level refresh/reschedule point for an AI-driven turn — advanceTurn()
+  // and endRound() are pure state transitions now and never call this themselves, so it only
+  // ever happens once per completed turn no matter how the turn actually ended.
+  refreshAll();
+  maybeRunAI();
+}
+
+function meldStandaloneRed3s(seatId){
+  const seat = G.seats[seatId];
+  const team = G.teams.find(t=>t.id===seat.teamId);
+  let hand = G.hands[seatId];
+  for(let i=hand.length-1;i>=0;i--){
+    if(isRed3(hand[i]) && Math.random()<0.6){ // AI usually prefers to meld red3s for safety rather than hold/freeze
+      const card = hand[i];
+      hand.splice(i,1);
+      team.red3MeldedCount++;
+      log(`${seat.name} melds a red 3 (+100) and draws a replacement.`, seat.isHuman);
+      if(G.deck.length){
+        const rep = G.deck.pop();
+        if(isBlack3(rep)){ team.black3Count++; log(`${seat.name} draws a black 3 — instant meld (+100), redraws.`, seat.isHuman); if(G.deck.length) hand.push(G.deck.pop()); }
+        else hand.push(rep);
+      }
+    }
+  }
+}
+
+function evaluatePileUsefulness(seatId, topRank){
+  const team = G.teams.find(t=>t.id===G.seats[seatId].teamId);
+  const pile = G.discardPile;
+  let score = 0;
+  const rankCounts = {};
+  for(const c of pile){
+    if(c.rank==='3') continue;
+    const k = isWild(c)?'WILD':c.rank;
+    rankCounts[k] = (rankCounts[k]||0)+1;
+  }
+  for(const k of Object.keys(rankCounts)){
+    if(k==='WILD') { score += 0.15*rankCounts[k]; continue; }
+    if(teamHasMeldOfRank(team,k)) score += 0.3*rankCounts[k];
+    const handCount = G.hands[seatId].filter(c=>c.rank===k).length;
+    score += 0.2*Math.min(handCount, rankCounts[k]);
+  }
+  score += Math.min(pile.length,10)*0.03;
+  return score;
+}
+
+function aiBuildAndStageMelds(seatId, depth){
+  const hand = G.hands[seatId];
+  const groups = aiHandGroupedByRank(hand);
+  const wilds = groups['__WILD__'] || [];
+  let wildsUsed = 0;
+  const ranksSorted = Object.keys(groups).filter(r=>r!=='__WILD__').sort((a,b)=>groups[b].length-groups[a].length);
+  for(const rank of ranksSorted){
+    const naturals = groups[rank];
+    const team = G.teams.find(t=>t.id===G.seats[seatId].teamId);
+    const already = team.melds[rank] ? team.melds[rank].length : 0;
+    if(naturals.length + already >= 3 || (already>=3)){
+      // enough naturals alone, or already an open meld to extend
+      if(naturals.length>=3 || already>0){
+        const use = naturals.slice(0, naturals.length); // use all naturals of this rank
+        if(use.length>0 && (use.length>=3 || already>0)){
+          stageIfValid(seatId, rank, use.map(c=>c.id));
+        }
+      }
+    } else if(naturals.length>=1 && depth>=2){
+      const need = 3-naturals.length;
+      const availableWilds = wilds.length - wildsUsed;
+      if(availableWilds>=need && need<=3){
+        const use = naturals.concat(wilds.slice(wildsUsed, wildsUsed+need));
+        wildsUsed += need;
+        stageIfValid(seatId, rank, use.map(c=>c.id));
+      }
+    }
+  }
+}
+
+function stageIfValid(seatId, rank, cardIds){
+  const res = stageMeld(seatId, rank, cardIds);
+  return res.ok;
+}
+
+function aiForceObligationMeld(seatId, rank){
+  const hand = G.hands[seatId];
+  const naturals = hand.filter(c=>!isWild(c) && c.rank===rank);
+  const wilds = hand.filter(isWild);
+  const team = G.teams.find(t=>t.id===G.seats[seatId].teamId);
+  const already = team.melds[rank] ? team.melds[rank].length : 0;
+  if(naturals.length>=2){
+    stageIfValid(seatId, rank, naturals.slice(0,naturals.length).map(c=>c.id));
+  } else if(naturals.length>=1 && already>0){
+    stageIfValid(seatId, rank, [naturals[0].id]);
+  } else if(naturals.length>=1 && wilds.length>=1){
+    stageIfValid(seatId, rank, [naturals[0].id, wilds[0].id, ...(naturals[1]?[naturals[1].id]:[])].slice(0,Math.max(3,naturals.length+1)));
+  }
+}
+
+function aiPadMeldsForThreshold(seatId, threshold){
+  const hand = G.hands[seatId];
+  const groups = aiHandGroupedByRank(hand);
+  const wilds = (groups['__WILD__']||[]);
+  let wildIdx=0;
+  for(const rank of Object.keys(groups)){
+    if(rank==='__WILD__') continue;
+    if(stageBufferTotalValue()>=threshold) break;
+    const naturals = groups[rank];
+    if(naturals.length===2 && wildIdx<wilds.length){
+      const use=[naturals[0],naturals[1],wilds[wildIdx]]; wildIdx++;
+      stageIfValid(seatId, rank, use.map(c=>c.id));
+    }
+  }
+}
+
+function aiChooseDiscard(seatId, depth){
+  const hand = G.hands[seatId];
+  if(hand.length===0) return null;
+  const team = G.teams.find(t=>t.id===G.seats[seatId].teamId);
+  const rankCounts = {};
+  for(const c of hand){ const k=isWild(c)?'WILD':c.rank; rankCounts[k]=(rankCounts[k]||0)+1; }
+
+  // Deliberate freeze play: if team already opened, has a spare wild, and few dead cards, occasionally freeze
+  if(depth>=2 && Object.keys(team.melds).length>0){
+    const spareWild = hand.find(isWild);
+    if(spareWild && rankCounts['WILD']>1 && Math.random() < 0.08*depth){
+      return spareWild.id;
+    }
+  }
+
+  let candidates = hand.filter(c=>!isWild(c));
+  if(candidates.length===0) candidates = hand.slice();
+
+  // Prefer singles (no pair) with low point value; avoid feeding opponents at higher depth
+  let scored = candidates.map(c=>{
+    let riskScore = 0;
+    const count = rankCounts[c.rank]||0;
+    riskScore += (count>=2 ? 3 : 0); // keep pairs when possible
+    riskScore -= cardPoints(c)*0.02; // prefer discarding higher point junk singles less... actually prefer LOW point safe discards
+    if(depth>=4 && !isWild(c) && c.rank!=='3'){
+      // Card-counting risk estimate — uses ONLY public information: cards ever melded or
+      // discarded (regardless of which team), and hand SIZES (visible to everyone at a real
+      // table, since you can see how many cards someone holds even face-down). This never reads
+      // any hand's actual contents, own or otherwise — partner's or opponents'.
+      const totalCopies = 8; // 2 decks x 4 suits, per standard rank
+      const revealed = rankRevealedCount(c.rank);
+      const inMyOwnHand = hand.filter(h=>!isWild(h) && h.rank===c.rank).length;
+      const unknownCopies = Math.max(0, totalCopies - revealed - inMyOwnHand);
+      if(unknownCopies>0){
+        const otherSeats = G.seats.filter(s=>s.id!==seatId);
+        let totalUnknownSlots = G.deck.length;
+        for(const s of otherSeats) totalUnknownSlots += G.hands[s.id].length;
+        if(totalUnknownSlots>0){
+          for(const s of otherSeats){
+            const oTeam = G.teams.find(t=>t.id===s.teamId);
+            if(oTeam.id===team.id) continue; // never treat a partner's hand as a discard risk
+            const theirHandSize = G.hands[s.id].length;
+            const expectedInTheirHand = unknownCopies * (theirHandSize / totalUnknownSlots);
+            if(expectedInTheirHand >= 1.3) riskScore += 5; // likely enough copies for a natural pair
+            else if(expectedInTheirHand >= 0.6 && teamHasMeldOfRank(oTeam, c.rank)) riskScore += 3; // could plausibly add one to their own meld
+          }
+        }
+      }
+    }
+    return {card:c, riskScore};
+  });
+  scored.sort((a,b)=>a.riskScore-b.riskScore);
+  const epsilon = (6-depth)/6; // lower depth = more random
+  if(Math.random() < epsilon*0.5){
+    return candidates[Math.floor(Math.random()*candidates.length)].id;
+  }
+  return scored[0].card.id;
+}
+
+function maybeRunAI(){
+  if(Net.mode==='guest') return; // only the host ever runs AI turns
+  if(G.phase==='over') return;
+  const seat = G.seats[G.turnSeat];
+  if(!seat.isHuman){
+    setTimeout(()=>runAITurn(seat.id), 350 + G.aiDepth*220);
+  }
+}
+
+/* =========================================================================
+   RENDERING
+   ========================================================================= */
+function cardLabel(c){
+  if(c.rank==='JOKER') return 'Joker';
+  return c.rank + SUIT_SYMBOL[c.suit];
+}
+function cardEl(c, opts){
+  opts=opts||{};
+  const div = document.createElement('div');
+  div.className='card';
+  if(c.suit==='H'||c.suit==='D') div.classList.add('red');
+  if(isWild(c)) div.classList.add('wild');
+  if(isBlack3(c)) div.classList.add('black3');
+  if(isRed3(c)) div.classList.add('red3');
+  if(opts.selected) div.classList.add('selected');
+  const rankLabel = c.rank==='JOKER' ? 'JKR' : c.rank;
+  const suitSym = c.suit ? SUIT_SYMBOL[c.suit] : (c.rank==='JOKER' ? '★' : '');
+
+  const idxTL = document.createElement('div');
+  idxTL.className = 'idx tl';
+  idxTL.innerHTML = rankLabel + (suitSym ? `<span class="pip">${suitSym}</span>` : '');
+  div.appendChild(idxTL);
+
+  if(suitSym){
+    const centerPip = document.createElement('div');
+    centerPip.className = 'center-pip';
+    centerPip.textContent = suitSym;
+    div.appendChild(centerPip);
+  }
+
+  const idxBR = document.createElement('div');
+  idxBR.className = 'idx br';
+  idxBR.innerHTML = rankLabel + (suitSym ? `<span class="pip">${suitSym}</span>` : '');
+  div.appendChild(idxBR);
+
+  if(opts.onClick) div.addEventListener('click', opts.onClick);
+  div.dataset.id = c.id;
+  return div;
+}
+
+function mySeatId(){
+  if(Net.mode==='host' || Net.mode==='guest'){
+    return Net.mySeatId;
+  }
+  // Local/hotseat mode: whichever seat is actually up right now is the active perspective, as
+  // long as it's human-controlled — this matters when one person plays more than one seat (e.g.
+  // their own spot and their partner's, with no AI partner): each seat's hand must only ever be
+  // visible and actionable on that seat's own turn, never bled into another seat's turn.
+  if(G.seats[G.turnSeat] && G.seats[G.turnSeat].isHuman) return G.turnSeat;
+  const h = G.seats.find(s=>s.isHuman);
+  return h ? h.id : 0;
+}
+function isMyTurn(){
+  if(Net.mode==='host' || Net.mode==='guest'){
+    return G.turnSeat === Net.mySeatId;
+  }
+  return G.seats[G.turnSeat].isHuman;
+}
+
+/* =========================================================================
+   NETWORKING — host-authoritative, up to 3 remote guests over WebRTC.
+   The host device runs the real engine (same functions as local play). Guests
+   are thin clients: they never mutate game state themselves, they only ever
+   render a per-seat "redacted view" the host sends them, and ask the host to
+   perform actions on their behalf. A guest's browser never receives another
+   seat's hand — not "isn't shown it", never actually sent it.
+   ========================================================================= */
+var Net = {
+  mode: 'local', // 'local' | 'host' | 'guest'
+  mySeatId: null, // fixed seat for host's own play or a guest's assigned seat
+  myName: null, // guest's own chosen display name, sent to the host on connect
+  peer: null, // this device's PeerJS Peer instance (host or guest)
+  roomCode: null, // host's room code, once created
+  transport: null, // for a guest: the single PeerJS DataConnection to the host
+  hostConnections: {}, // for a host: seatId -> {conn, status} (one per connected guest)
+  pendingNetworkSeats: [], // for a host: seat ids marked Network, awaiting a connection, in order
+  pendingGuestNames: {}, // for a host: seatId -> name a guest introduced themselves with
+  lobbySeats: [], // for a host: full seat layout {id,name,type,occupantConn,occupantName} for the pre-game lobby
+  unseatedConns: {}, // for a host: tempId -> {conn,name} for guests connected but not yet seated
+  onStatus: null, // optional UI hook for connection status messages
+};
+
+const TURN_ACTION_TYPES = new Set(['drawStock','takePile','stageMeld','unstageAll','undoTakePile','endTurn']);
+
+// Host-side: apply an action on behalf of `seatId`. seatId always comes from which connection
+// the message arrived on (or, for the host's own seat, from mySeatId()) — never from a field
+// inside the message itself, so a guest can't claim to be acting as a different seat.
+function applyAction(seatId, action){
+  if(!G || G.phase==='over') return {ok:false, reason:'The round has already ended.'};
+  if(TURN_ACTION_TYPES.has(action.type) && G.turnSeat !== seatId){
+    return {ok:false, reason:'Not your turn.'};
+  }
+  switch(action.type){
+    case 'drawStock': drawFromStock(seatId); return {ok:true};
+    case 'takePile': return {ok: takePile(seatId)};
+    case 'stageMeld': return stageMeld(seatId, action.rank, action.cardIds);
+    case 'unstageAll': unstageAll(seatId); return {ok:true};
+    case 'undoTakePile': return {ok: undoTakePile(seatId)};
+    case 'endTurn': return attemptEndTurn(seatId, action.discardCardId);
+    default: return {ok:false, reason:'Unknown action.'};
+  }
+}
+
+// Every UI action handler calls this instead of touching engine functions directly. In local or
+// host mode it applies immediately to the authoritative G; in guest mode it just sends the
+// request to the host and waits — the UI updates when the host's next view arrives.
+function dispatchAction(action, successMessage){
+  if(Net.mode==='guest'){
+    if(Net.transport) Net.transport.send(JSON.stringify({type:'action', action}));
+    setStatus('Sent to host…', '');
+    return;
+  }
+  const seatId = mySeatId();
+  const res = applyAction(seatId, action);
+  if(res && res.ok===false){
+    setStatus(res.reason || 'That action was rejected.', 'warn');
+  } else {
+    G.selectedCardIds = [];
+    setStatus(successMessage || '', successMessage ? 'ok' : '');
+  }
+  refreshAll(); // for a host, refreshAll() also broadcasts fresh views to every connected guest
+  maybeRunAI();
+}
+
+// --- Host: build the redacted view for one specific seat ---
+function buildRedactedView(seatId){
+  const otherHandCounts = {};
+  for(const s of G.seats) if(s.id!==seatId) otherHandCounts[s.id] = G.hands[s.id].length;
+  const discardTop = G.discardPile.length ? G.discardPile[G.discardPile.length-1] : null;
+  const iAmActing = G.turnSeat === seatId;
+  return {
+    numPlayers: G.numPlayers,
+    roundNum: G.roundNum,
+    gameOver: G.gameOver,
+    phase: G.phase,
+    turnSeat: G.turnSeat,
+    freeze: G.freeze,
+    pendingObligationRank: G.pendingObligationRank,
+    mySeatId: seatId,
+    seats: G.seats.map(s=>({id:s.id, name:s.name, isAI: !s.isHuman, teamId: s.teamId})),
+    teams: G.teams.map(t=>({
+      id:t.id, name:t.name, players:t.players, melds:t.melds, black3Count:t.black3Count,
+      red3MeldedCount:t.red3MeldedCount, score:t.score, wentOut:t.wentOut, wentOutConcealed:t.wentOutConcealed,
+    })),
+    myHand: G.hands[seatId],
+    otherHandCounts,
+    stockCount: G.deck.length,
+    discardTop, discardCount: G.discardPile.length,
+    hasPileTakeSnapshot: iAmActing && !!G.pileTakeSnapshot,
+    myStageBuffer: iAmActing ? G.stageBuffer.map(g=>({rank:g.rank, cards:g.cards})) : [],
+    thresholdMode: G.thresholdMode,
+    log: G.logEntries.slice(-60),
+  };
+}
+
+// --- Guest: rebuild a local shadow G from the host's view. Reuses all the same render
+// functions as local play, since they already only ever read the viewer's own hand contents
+// and other seats' hand LENGTHS — exactly the information a redacted view actually contains. ---
+function applyIncomingView(view){
+  const prevSelected = (G && G.selectedCardIds) || [];
+  const hands = {};
+  for(const s of view.seats){
+    if(s.id===view.mySeatId) hands[s.id] = view.myHand;
+    else hands[s.id] = new Array(view.otherHandCounts[s.id]||0).fill(0).map(()=>({id:'hidden', rank:'?', suit:null}));
+  }
+  const discardPile = view.discardCount>0
+    ? new Array(view.discardCount-1).fill(0).map(()=>({id:'hidden-discard', rank:'?', suit:null})).concat([view.discardTop])
+    : [];
+  G = {
+    numPlayers: view.numPlayers,
+    roundNum: view.roundNum,
+    gameOver: view.gameOver,
+    phase: view.phase,
+    turnSeat: view.turnSeat,
+    freeze: view.freeze,
+    pendingObligationRank: view.pendingObligationRank,
+    mySeatId: view.mySeatId,
+    seats: view.seats.map(s=>({id:s.id, name:s.name, isHuman: !s.isAI, teamId: s.teamId})),
+    teams: view.teams,
+    hands,
+    deck: new Array(view.stockCount).fill(0),
+    discardPile,
+    pendingObligationRank: view.pendingObligationRank,
+    pileTakeSnapshot: view.hasPileTakeSnapshot ? {cards:[], freezeBefore:'none'} : null,
+    stageBuffer: view.myStageBuffer.map(g=>({rank:g.rank, cards:g.cards, seatId:view.mySeatId})),
+    selectedCardIds: prevSelected.filter(id=>view.myHand.some(c=>c.id===id)),
+    aiDepth: 3,
+    thresholdMode: view.thresholdMode,
+    logEntries: view.log.map(e=>({msg:e.msg, isYou: false})),
+    dealSize: view.numPlayers===2?13:11,
+  };
+  Net.mySeatId = view.mySeatId;
+}
+
+// --- Host: handle an incoming message from a specific connected guest ---
+function handleGuestMessage(seatId, raw){
+  let msg;
+  try { msg = JSON.parse(raw); } catch(e){ return; }
+  if(msg.type==='hello'){
+    Net.pendingGuestNames[seatId] = msg.name;
+    if(typeof onNetStatusChange==='function') onNetStatusChange();
+    return;
+  }
+  if(msg.type!=='action') return;
+  if(!G) return; // game hasn't started yet, ignore stray actions
+  applyAction(seatId, msg.action);
+  refreshAll(); // broadcasts fresh views to all guests, including the sender
+  maybeRunAI();
+}
+
+// --- Guest: handle an incoming message from the host ---
+function handleHostMessage(raw){
+  let msg;
+  try { msg = JSON.parse(raw); } catch(e){ return; }
+  if(msg.type==='lobby'){
+    renderSeatPicker(msg.seats);
+    return;
+  }
+  if(msg.type==='seatConfirmed'){
+    document.getElementById('seat-picker-card').style.display = 'none';
+    document.getElementById('join-waiting-card').style.display = 'block';
+    return;
+  }
+  if(msg.type==='seatRejected'){
+    const statusEl = document.getElementById('seat-picker-status');
+    statusEl.textContent = msg.reason || 'That seat is no longer available.';
+    statusEl.className = 'status-line warn';
+    return;
+  }
+  if(msg.type==='view'){
+    const firstView = !G;
+    applyIncomingView(msg.view);
+    if(firstView){
+      const landingEl = document.getElementById('landing-screen');
+      const setupEl = document.getElementById('setup-screen');
+      const gameEl = document.getElementById('game-screen');
+      if(landingEl) landingEl.style.display='none';
+      if(setupEl) setupEl.style.display='none';
+      if(gameEl) gameEl.style.display='block';
+    }
+    refreshAll();
+  }
+}
+
+// --- Guest: render the seat picker from the host's lobby state ---
+function renderSeatPicker(seats){
+  document.getElementById('join-step1-card').style.display = 'none';
+  document.getElementById('seat-picker-card').style.display = 'block';
+  document.getElementById('join-waiting-card').style.display = 'none';
+  const list = document.getElementById('seat-picker-list');
+  list.innerHTML = '';
+  seats.forEach(s=>{
+    const row = document.createElement('div');
+    row.className = 'seat-row';
+    let statusText, clickable = false;
+    if(s.type==='self'){ statusText = 'Host'; }
+    else if(s.type==='computer'){ statusText = 'Computer'; }
+    else if(s.taken){ statusText = s.occupantName ? `Taken — ${s.occupantName}` : 'Taken'; }
+    else { statusText = 'Open — tap to sit here'; clickable = true; }
+    row.innerHTML = `<span style="flex:1;font-size:15px;">${s.name}</span><span style="color:var(--ivory-dim);font-size:13.5px;">${statusText}</span>`;
+    if(clickable){
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', ()=>{
+        if(Net.transport) Net.transport.send(JSON.stringify({type:'selectSeat', seatId: s.id}));
+        const statusEl = document.getElementById('seat-picker-status');
+        statusEl.textContent = 'Requesting that seat…';
+        statusEl.className = 'status-line';
+      });
+    }
+    list.appendChild(row);
+  });
+}
+
+// --- Host: push a fresh redacted view to every connected guest ---
+function broadcastToGuests(){
+  for(const seatId of Object.keys(Net.hostConnections)){
+    const hc = Net.hostConnections[seatId];
+    if(hc && hc.conn && hc.status==='connected'){
+      const view = buildRedactedView(Number(seatId));
+      hc.conn.send(JSON.stringify({type:'view', view}));
+    }
+  }
+}
+
+/* =========================================================================
+   NETWORKING TRANSPORT — PeerJS over WebRTC. PeerJS's free public cloud
+   server only ever brokers the initial handshake (an introduction between
+   two devices); once connected, game data flows peer-to-peer exactly as it
+   did before — the signaling server never sees a single card. This replaces
+   the old manual offer/answer code exchange with a short room code the host
+   shares once, since PeerJS automates the handshake both devices used to
+   have to do by hand.
+
+   STUN alone only helps two devices discover each other's address — it
+   can't help when a direct connection genuinely can't form (symmetric NAT,
+   strict corporate firewalls, separate restrictive networks). For that, an
+   optional TURN relay can be configured below; without one, only
+   same-network or permissive-NAT connections will succeed. PeerJS is told
+   about it the same way a plain RTCPeerConnection would be.
+   ========================================================================= */
+
+// ---- EMBEDDED TURN DEFAULT (optional) ----
+// If you host from more than one device/browser and don't want to re-enter your TURN
+// credentials on each one, use the "Generate embeddable code" button in the Network relay
+// settings panel (Host online mode) — it takes what you typed into that form and hands you a
+// string to paste as the value below. Leave it as an empty string to skip this entirely; nothing
+// changes and the settings panel's normal per-browser storage still works exactly as before.
+// This only obscures the credential from a casual glance at the file — it is still usable by
+// anyone who actually inspects the running page, same as any credential embedded in client-side
+// code. Only do this with a credential you're fine being technically recoverable that way.
+const EMBEDDED_TURN_DEFAULT = "eyJ1cmwiOiJ0dXJuOnN0YW5kYXJkLnJlbGF5Lm1ldGVyZWQuY2E6NDQzIiwidXNlcm5hbWUiOiJkNGJiYjY5YWFkYjU0ZWJiODgzZGRjZDciLCJjcmVkZW50aWFsIjoiZVkrNjBLSVBTRHlqVGtlOCJ9";
+
+function decodeEmbeddedTurnDefault(){
+  if(!EMBEDDED_TURN_DEFAULT) return null;
+  try{
+    const json = decodeURIComponent(escape(atob(EMBEDDED_TURN_DEFAULT)));
+    const obj = JSON.parse(json);
+    if(obj && obj.url) return obj;
+  } catch(e){ /* malformed — ignore and fall back to no default */ }
+  return null;
+}
+
+function getIceServers(){
+  const servers = [{ urls: 'stun:stun.l.google.com:19302' }];
+  try{
+    let url = localStorage.getItem('canasta_turn_url');
+    let username = localStorage.getItem('canasta_turn_username');
+    let credential = localStorage.getItem('canasta_turn_credential');
+    if(!url){
+      const embedded = decodeEmbeddedTurnDefault();
+      if(embedded){ url = embedded.url; username = embedded.username; credential = embedded.credential; }
+    }
+    if(url){
+      const entry = { urls: url };
+      if(username) entry.username = username;
+      if(credential) entry.credential = credential;
+      servers.push(entry);
+    }
+  } catch(e){ /* localStorage unavailable — just fall back to STUN only */ }
+  return servers;
+}
+function RTC_CONFIG(){ return { iceServers: getIceServers() }; }
+
+
+function randomRoomCode(){
+  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L — easier to read aloud
+  let code = '';
+  for(let i=0;i<5;i++) code += alphabet[Math.floor(Math.random()*alphabet.length)];
+  return 'cnst-' + code;
+}
+
+// HOST: create the room. Resolves with the room code once the signaling
+// broker confirms it's reachable; from then on, any guest who connects gets
+// assigned to the next seat marked "Network" that's still waiting.
+function buildLobbySeats(){
+  const rows = document.querySelectorAll('#seats-container .seat-row');
+  const seats = [];
+  rows.forEach((row,i)=>{
+    const name = row.querySelector('input').value.trim() || ('Player '+(i+1));
+    if(i===0){ seats.push({id:i, name, type:'self', occupantConn:null, occupantName:null}); return; }
+    const active = row.querySelector('.toggle-pair button.active');
+    const type = (active && active.dataset.val==='network') ? 'network' : 'computer';
+    seats.push({id:i, name, type, occupantConn:null, occupantName:null});
+  });
+  return seats;
+}
+
+function lobbySeatsView(){
+  return Net.lobbySeats.map(s=>({id:s.id, name:s.name, type:s.type, taken: !!s.occupantConn, occupantName: s.occupantName}));
+}
+function sendLobbyStateTo(conn){
+  if(conn.open===false) return;
+  conn.send(JSON.stringify({type:'lobby', seats: lobbySeatsView()}));
+}
+function broadcastLobbyState(){
+  for(const tempId of Object.keys(Net.unseatedConns)) sendLobbyStateTo(Net.unseatedConns[tempId].conn);
+}
+
+// Host-side: a connecting guest hasn't picked a seat yet — handle their 'hello' (name) and
+// 'selectSeat' (their choice) messages, distinct from real in-game actions.
+function handleUnseatedGuestMessage(tempId, raw){
+  let msg;
+  try { msg = JSON.parse(raw); } catch(e){ return; }
+  const entry = Net.unseatedConns[tempId];
+  if(!entry) return;
+  if(msg.type==='hello'){
+    entry.name = msg.name;
+    return;
+  }
+  if(msg.type==='selectSeat'){
+    const seat = Net.lobbySeats.find(s=>s.id===msg.seatId);
+    if(!seat || seat.type!=='network' || seat.occupantConn){
+      entry.conn.send(JSON.stringify({type:'seatRejected', reason:'That seat was just taken — pick another.'}));
+      sendLobbyStateTo(entry.conn);
+      return;
+    }
+    seat.occupantConn = entry.conn;
+    seat.occupantName = entry.name || 'Guest';
+    Net.hostConnections[seat.id] = { conn: entry.conn, status: 'connected' };
+    Net.pendingGuestNames[seat.id] = seat.occupantName;
+    delete Net.unseatedConns[tempId];
+    entry.conn.send(JSON.stringify({type:'seatConfirmed', seatId: seat.id}));
+    if(typeof onNetStatusChange==='function') onNetStatusChange();
+    if(G && G.phase) broadcastToGuests(); // if the game is somehow already running, catch this seat up
+    broadcastLobbyState(); // let remaining unseated guests see that seat is now taken
+  }
+}
+
+function hostStartRoom(networkSeatIds){
+  return new Promise((resolve, reject)=>{
+    Net.pendingNetworkSeats = networkSeatIds.slice();
+    Net.lobbySeats = buildLobbySeats();
+    Net.hostConnections = {};
+    Net.unseatedConns = {};
+    let nextTempId = 1;
+    let attempt = 0;
+    function tryCreate(){
+      attempt++;
+      const roomCode = randomRoomCode();
+      const peer = new Peer(roomCode, { config: RTC_CONFIG() });
+      Net.peer = peer;
+      peer.on('open', (id)=>{
+        Net.roomCode = id;
+        resolve(id);
+      });
+      peer.on('connection', (conn)=>{
+        const tempId = 'u'+(nextTempId++);
+        Net.unseatedConns[tempId] = { conn, name:null };
+        conn.on('open', ()=>{ sendLobbyStateTo(conn); });
+        conn.on('data', (data)=>{
+          const raw = typeof data==='string' ? data : JSON.stringify(data);
+          // Once seated, this connection belongs to a real seat; route real game actions there.
+          // Until then, treat messages as lobby traffic (name intro, seat choice).
+          const seatEntry = Object.keys(Net.hostConnections).find(sid=>Net.hostConnections[sid].conn===conn);
+          if(seatEntry!=null) handleGuestMessage(Number(seatEntry), raw);
+          else handleUnseatedGuestMessage(tempId, raw);
+        });
+        conn.on('close', ()=>{
+          delete Net.unseatedConns[tempId];
+          for(const sid of Object.keys(Net.hostConnections)){
+            if(Net.hostConnections[sid].conn===conn){
+              Net.hostConnections[sid].status = 'disconnected';
+              if(typeof onNetStatusChange==='function') onNetStatusChange();
+            }
+          }
+        });
+      });
+      peer.on('error', (err)=>{
+        if(err && err.type==='unavailable-id' && attempt<5){ tryCreate(); return; } // extremely rare collision, retry
+        reject(err);
+      });
+    }
+    tryCreate();
+  });
+}
+
+// GUEST: join a room by its code.
+function guestJoinRoom(roomCode, name){
+  return new Promise((resolve, reject)=>{
+    Net.myName = name;
+    Net.mode = 'guest';
+    const peer = new Peer(undefined, { config: RTC_CONFIG() });
+    Net.peer = peer;
+    let settled = false;
+    const timeout = setTimeout(()=>{
+      if(!settled){ settled = true; reject(new Error('Could not reach that room — check the code and that your host has created it.')); }
+    }, 15000);
+    peer.on('open', ()=>{
+      const conn = peer.connect(roomCode.trim(), { reliable: true });
+      Net.transport = conn;
+      conn.on('open', ()=>{
+        if(settled) return;
+        settled = true; clearTimeout(timeout);
+        conn.send(JSON.stringify({type:'hello', name: Net.myName || 'Guest'}));
+        if(typeof onNetStatusChange==='function') onNetStatusChange();
+        resolve({ok:true});
+      });
+      conn.on('data', (data)=>{ handleHostMessage(typeof data==='string' ? data : JSON.stringify(data)); });
+      conn.on('close', ()=>{ if(typeof onNetStatusChange==='function') onNetStatusChange(); });
+      conn.on('error', (err)=>{
+        if(settled) return;
+        settled = true; clearTimeout(timeout);
+        reject(err);
+      });
+    });
+    peer.on('error', (err)=>{
+      if(settled) return;
+      settled = true; clearTimeout(timeout);
+      reject(err);
+    });
+  });
+}
+
+function refreshAll(){
+  renderTopbar();
+  renderOpponents();
+  renderPiles();
+  renderTeamPanels();
+  renderHand();
+  renderStaging();
+  renderActionBar();
+  if(Net.mode==='host') broadcastToGuests();
+}
+
+function renderTopbar(){
+  document.getElementById('round-info').textContent = `Round ${G.roundNum} · ${G.deck.length} cards left in stock`;
+  const wrap = document.getElementById('score-pills');
+  wrap.innerHTML='';
+  const maxScore = Math.max(...G.teams.map(t=>t.score));
+  for(const t of G.teams){
+    const pill = document.createElement('div');
+    pill.className = 'score-pill' + (t.score===maxScore && maxScore>0 ? ' leading':'');
+    pill.innerHTML = `<div class="name">${t.name}</div><div class="val">${t.score}</div>`;
+    wrap.appendChild(pill);
+  }
+}
+
+function compassSlotForOffset(offset, numPlayers){
+  if(numPlayers===2) return 'north'; // the only opponent, straight across
+  if(numPlayers===3) return offset===1 ? 'east' : 'west';
+  // 4 players: matches the established turn order You -> East -> Partner(North) -> West -> You
+  if(offset===1) return 'east';
+  if(offset===2) return 'north';
+  return 'west';
+}
+
+function renderOpponents(){
+  const slots = {north: document.getElementById('slot-north'), east: document.getElementById('slot-east'), west: document.getElementById('slot-west')};
+  slots.north.innerHTML=''; slots.east.innerHTML=''; slots.west.innerHTML='';
+  const me = mySeatId();
+  for(const seat of G.seats){
+    if(seat.id===me) continue;
+    const team = G.teams.find(t=>t.id===seat.teamId);
+    const div = document.createElement('div');
+    div.className='opp-seat' + (G.turnSeat===seat.id?' current-turn':'');
+    const cardCount = G.hands[seat.id].length;
+    let backs='';
+    for(let i=0;i<Math.min(cardCount,10);i++) backs += '<span class="mini-cardback"></span>';
+    div.innerHTML = `<div class="opp-name">${seat.name} <span class="badge">${seat.isHuman?'Human':'Computer'}</span></div>
+      <div class="opp-meta">${team.name} · ${cardCount} cards</div>
+      <div class="cardback-fan">${backs}</div>`;
+    const offset = (seat.id - me + G.numPlayers) % G.numPlayers;
+    const slotName = compassSlotForOffset(offset, G.numPlayers);
+    slots[slotName].appendChild(div);
+  }
+}
+
+function renderPiles(){
+  const stockEl = document.getElementById('stock-pile');
+  document.getElementById('stock-count').textContent = G.deck.length;
+  stockEl.classList.toggle('clickable', isMyTurn() && G.phase==='draw');
+  stockEl.onclick = ()=>{
+    if(isMyTurn() && G.phase==='draw'){
+      dispatchAction({type:'drawStock'});
+    }
+  };
+
+  const discEl = document.getElementById('discard-pile');
+  const countBadge = document.getElementById('discard-count');
+  discEl.className='discard-pile';
+  discEl.innerHTML='';
+  const top = G.discardPile[G.discardPile.length-1];
+  if(top){
+    if(G.freeze==='wild') discEl.classList.add('frozen-wild');
+    else if(G.freeze==='red3') discEl.classList.add('frozen-red3');
+    discEl.appendChild(cardEl(top));
+    countBadge.style.display='block';
+    countBadge.textContent = G.discardPile.length;
+  } else {
+    discEl.classList.add('empty');
+    countBadge.style.display='none';
+  }
+
+  const takeBtn = document.getElementById('take-pile-btn');
+  const canShow = isMyTurn() && G.phase==='draw' && top;
+  takeBtn.style.display = canShow ? 'inline-block' : 'none';
+  if(canShow){
+    const team = G.teams.find(t=>t.id===G.seats[mySeatId()].teamId);
+    const eligible = !topCardBlocksTake(top) && canTakePile(G.hands[mySeatId()], top.rank, G.freeze, teamHasMeldOfRank(team, top.rank));
+    takeBtn.disabled = !eligible;
+    takeBtn.title = eligible ? '' : (topCardBlocksTake(top) ? 'Top card must be buried under a natural discard first.' : 'You need a natural pair of this rank in hand.');
+    takeBtn.onclick = ()=>{
+      dispatchAction({type:'takePile'});
+    };
+  }
+}
+
+function meldGroupEl(rank, cards, onClick){
+  const wrap = document.createElement('div');
+  wrap.className='meld-group';
+  const stack = document.createElement('div');
+  stack.className='stack';
+  for(const c of cards) stack.appendChild(cardEl(c));
+  wrap.appendChild(stack);
+  const tag = document.createElement('div');
+  tag.className='tag';
+  let label = `${rank} ×${cards.length}`;
+  if(isCanasta(cards)) label += canastaType(cards)==='natural' ? ' 🏆natural' : ' 🏆mixed';
+  tag.textContent = label;
+  wrap.appendChild(tag);
+  if(onClick){
+    wrap.classList.add('clickable');
+    wrap.title = `Add selected card(s) to this ${rank} meld`;
+    wrap.addEventListener('click', onClick);
+  }
+  return wrap;
+}
+
+function renderTeamPanels(){
+  const wrap = document.getElementById('team-panels');
+  wrap.innerHTML='';
+  const myTeamId = G.seats[mySeatId()].teamId;
+  const canAddToMeld = isMyTurn() && G.phase==='main' && G.selectedCardIds.length>=1;
+  for(const team of G.teams){
+    const panel = document.createElement('div');
+    panel.className='team-panel' + (team.id===myTeamId?' mine':'');
+    const h = document.createElement('h4');
+    h.textContent = team.name + (team.id===myTeamId?' (you)':'');
+    panel.appendChild(h);
+    const strip = document.createElement('div');
+    strip.className='melds-strip';
+    const ranks = Object.keys(team.melds).sort();
+    if(ranks.length===0){
+      const p = document.createElement('div');
+      p.className='opp-meta'; p.textContent='No melds yet.';
+      strip.appendChild(p);
+    }
+    for(const r of ranks){
+      const clickHandler = (team.id===myTeamId && canAddToMeld) ? ()=>addSelectedToMeld(r) : null;
+      strip.appendChild(meldGroupEl(r, team.melds[r], clickHandler));
+    }
+    panel.appendChild(strip);
+    const bonusRow = document.createElement('div');
+    bonusRow.className='bonus-row';
+    bonusRow.style.marginTop='6px';
+    if(team.black3Count) bonusRow.innerHTML += `<span class="bonus-chip">Black 3s ×${team.black3Count}</span>`;
+    if(team.red3MeldedCount) bonusRow.innerHTML += `<span class="bonus-chip">Red 3s ×${team.red3MeldedCount}</span>`;
+    panel.appendChild(bonusRow);
+    if(team.id===myTeamId && canAddToMeld && ranks.length>0){
+      const hint = document.createElement('div');
+      hint.style.cssText = 'font-size:10.5px;color:var(--brass-bright);margin-top:6px;';
+      hint.textContent = 'Click a meld above to add your selected card(s) to it.';
+      panel.appendChild(hint);
+    }
+    wrap.appendChild(panel);
+  }
+}
+
+// Adds whatever hand cards are currently selected directly to an existing meld of `rank` —
+// this is the only path for placing a wild-only selection, since a wild has no rank of its own
+// for the ordinary "Meld selected" button to detect automatically.
+function addSelectedToMeld(rank){
+  if(!isMyTurn() || G.phase!=='main'){ setStatus('Draw a card first.', 'warn'); return; }
+  if(G.selectedCardIds.length===0){ setStatus('Select at least one card from your hand first.', 'warn'); return; }
+  dispatchAction({type:'stageMeld', rank, cardIds: G.selectedCardIds},
+    `Staged onto the ${rank} meld. Commit it by discarding to end your turn, or return it to hand.`);
+}
+
+function renderHand(){
+  const me = mySeatId();
+  document.getElementById('whoami').textContent = `${G.seats[me].name}'s hand (${G.hands[me].length} cards)${isMyTurn()?' — your turn':''}`;
+  const row = document.getElementById('hand-row');
+  row.innerHTML='';
+  const hand = G.hands[me].slice().sort((a,b)=>{
+    const order = RANKS.concat(['JOKER']);
+    return order.indexOf(a.rank)-order.indexOf(b.rank);
+  });
+  for(const c of hand){
+    const selected = G.selectedCardIds.includes(c.id);
+    const el = cardEl(c, {selected, onClick:()=>{
+      if(!isMyTurn() || G.phase==='over') return;
+      const idx = G.selectedCardIds.indexOf(c.id);
+      if(idx>=0) G.selectedCardIds.splice(idx,1);
+      else G.selectedCardIds.push(c.id);
+      renderHand(); renderActionBar(); renderTeamPanels();
+    }});
+    row.appendChild(el);
+  }
+}
+
+function renderStaging(){
+  const me = mySeatId();
+  const wrap = document.getElementById('staging');
+  const mine = G.stageBuffer.filter(g=>g.seatId===me);
+  wrap.innerHTML='';
+  wrap.classList.toggle('has-items', mine.length>0);
+  if(mine.length===0){
+    wrap.innerHTML = '<span class="empty-hint">Select cards from your hand and press "Meld selected" to stage a group here.</span>';
+  } else {
+    for(const g of mine){
+      const gd = document.createElement('div');
+      gd.className='stage-group';
+      for(const c of g.cards) gd.appendChild(cardEl(c));
+      wrap.appendChild(gd);
+    }
+    const totalDiv = document.createElement('div');
+    totalDiv.className='stage-total';
+    const team = G.teams.find(t=>t.id===G.seats[me].teamId);
+    const opened = Object.keys(team.melds).length>0;
+    totalDiv.innerHTML = opened ? `Staged value: <b>${stageBufferTotalValue()}</b>` :
+      `Staged value: <b>${stageBufferTotalValue()}</b> / need ${initialMeldThreshold(team.score)} to open`;
+    wrap.appendChild(totalDiv);
+  }
+}
+
+function renderActionBar(){
+  const me = mySeatId();
+  const myTurn = isMyTurn() && G.phase!=='over';
+  const drawBtn = document.getElementById('draw-btn');
+  const meldBtn = document.getElementById('meld-btn');
+  const unstageBtn = document.getElementById('unstage-btn');
+  const discardBtn = document.getElementById('discard-btn');
+  const undoPileBtn = document.getElementById('undo-pile-btn');
+  const banner = document.getElementById('obligation-banner');
+
+  drawBtn.disabled = !(myTurn && G.phase==='draw');
+  drawBtn.onclick = ()=>{ dispatchAction({type:'drawStock'}); };
+
+  const canMeld = myTurn && G.phase==='main' && G.selectedCardIds.length>=1;
+  meldBtn.disabled = !canMeld;
+  meldBtn.onclick = ()=>{
+    const hand = G.hands[me];
+    const selected = G.selectedCardIds.map(id=>hand.find(c=>c.id===id)).filter(Boolean);
+    if(selected.length===0) return;
+    const naturals = selected.filter(c=>!isWild(c));
+    if(naturals.length===0){ setStatus('A wild card alone can\'t start a new meld — click an existing meld on the table to add it there instead.', 'warn'); return; }
+    const rank = naturals[0].rank;
+    if(!naturals.every(c=>c.rank===rank)){ setStatus('All natural cards in a meld must share the same rank.', 'warn'); return; }
+    dispatchAction({type:'stageMeld', rank, cardIds: G.selectedCardIds},
+      'Staged. Commit it by discarding to end your turn, or return it to hand.');
+  };
+
+  const myStaged = G.stageBuffer.some(g=>g.seatId===me);
+  unstageBtn.disabled = !(myTurn && myStaged);
+  unstageBtn.onclick = ()=>{ dispatchAction({type:'unstageAll'}); };
+
+  const canShowUndoPile = myTurn && G.phase==='main' && !!G.pileTakeSnapshot;
+  undoPileBtn.style.display = canShowUndoPile ? 'inline-block' : 'none';
+  undoPileBtn.onclick = ()=>{
+    dispatchAction({type:'undoTakePile'}, 'Pile returned to the table — draw from stock instead, or draw again.');
+  };
+
+  // Persistent reminder while a pile-take obligation is outstanding, so it's never a mystery
+  // why the discard button is refusing to work.
+  if(myTurn && G.phase==='main' && G.pendingObligationRank){
+    const team = G.teams.find(t=>t.id===G.seats[me].teamId);
+    const threshold = initialMeldThreshold(team.score);
+    const teamOpened = Object.keys(team.melds).length>0;
+    const obligationSatisfied = G.stageBuffer.some(g=>g.rank===G.pendingObligationRank && g.seatId===me);
+    if(obligationSatisfied){
+      banner.textContent = `Rank ${G.pendingObligationRank} was automatically melded from the pile you took — it'll commit when you discard. You can still add more matching cards from your hand, or return staged cards to hand and re-add differently.`;
+      banner.className = 'status-line ok';
+    } else {
+      let msg = `You took the pile — you still need to meld a card of rank ${G.pendingObligationRank} before discarding.`;
+      if(!teamOpened) msg += ` If that meld can't reach your team's opening minimum (${threshold} pts), use "Return pile to table" to undo the take and draw from stock instead.`;
+      banner.textContent = msg;
+      banner.className = 'status-line warn';
+    }
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+
+  const canDiscard = myTurn && G.phase==='main' && G.selectedCardIds.length===1;
+  const handEmptyAfterMeld = G.hands[me].length===0;
+  discardBtn.disabled = !(canDiscard || (myTurn && G.phase==='main' && handEmptyAfterMeld));
+  discardBtn.onclick = ()=>{
+    const discardId = handEmptyAfterMeld ? null : G.selectedCardIds[0];
+    dispatchAction({type:'endTurn', discardCardId: discardId});
+  };
+}
+
+function setStatus(msg, kind){
+  const el = document.getElementById('status-line');
+  el.textContent = msg;
+  el.className = 'status-line' + (kind?(' '+kind):'');
+}
+
+function showRoundSummary(reason, summaries){
+  const overlay = document.getElementById('modal-overlay');
+  const box = document.getElementById('modal-box');
+  const reasonText = reason==='went-out' ? 'A team went out.' : 'The stock ran out — round ends.';
+  let rows = summaries.map(s=>`<tr><td>${s.team.name}</td><td class="num">${s.roundScore>=0?'+':''}${s.roundScore}</td><td class="num">${s.canastaCount}</td><td class="num">${s.total}</td></tr>`).join('');
+  const gameOver = G.teams.some(t=>t.score>=5000);
+  box.innerHTML = `
+    <h2>Round ${G.roundNum} complete</h2>
+    <p class="sub">${reasonText}</p>
+    <table class="score-table">
+      <tr><th>Team</th><th style="text-align:right">Round</th><th style="text-align:right">Canastas</th><th style="text-align:right">Total</th></tr>
+      ${rows}
+    </table>
+    ${gameOver ? `<h2 style="margin-top:10px;">${G.teams.slice().sort((a,b)=>b.score-a.score)[0].name} wins the game!</h2><button class="action-btn primary" id="new-game-btn">New game</button>` :
+      `<button class="action-btn primary" id="next-round-btn">Deal next round</button>`}
+  `;
+  overlay.classList.add('show');
+  if(gameOver){
+    document.getElementById('new-game-btn').onclick = ()=>{ overlay.classList.remove('show'); location.reload(); };
+  } else {
+    document.getElementById('next-round-btn').onclick = ()=>{
+      overlay.classList.remove('show');
+      G.roundNum++;
+      startRound();
+    };
+  }
+}
+
+/* =========================================================================
+   SETUP SCREEN LOGIC
+   ========================================================================= */
+let selectedCount = null;
+let selectedThreshold = 'standard';
+var currentMode = 'local'; // 'local' | 'host' | 'join'
+
+// ---- Card back style (purely local/per-device, never synced) ----
+function applyCardBackStyle(style){
+  document.body.dataset.cardback = style;
+  try{ localStorage.setItem('canasta_cardback', style); } catch(e){}
+}
+(function initCardBackStyle(){
+  let saved = 'classic';
+  try{ saved = localStorage.getItem('canasta_cardback') || 'classic'; } catch(e){}
+  applyCardBackStyle(saved);
+  document.querySelectorAll('#cardback-row .cardback-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.cardback===saved);
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#cardback-row .cardback-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      applyCardBackStyle(btn.dataset.cardback);
+    });
+  });
+})();
+// Seat labels per player count. For 4 players, seats sit at South(you)/East/North(partner)/West,
+// matching the confirmed turn order: You -> East -> Partner (North, across) -> West -> You.
+const seatNamesByCount = {
+  2: ['You', 'Opponent'],
+  3: ['You', 'Right Opponent', 'Left Opponent'],
+  4: ['You (South)', 'Right Opponent (East)', 'Partner (North)', 'Left Opponent (West)'],
+};
+
+function goToLanding(){
+  document.getElementById('landing-screen').style.display='block';
+  document.getElementById('setup-screen').style.display='none';
+}
+function goToSetup(mode){
+  document.getElementById('landing-screen').style.display='none';
+  document.getElementById('setup-screen').style.display='block';
+  applyModeUI(mode);
+}
+document.getElementById('landing-new-game').addEventListener('click', ()=>goToSetup('local'));
+document.getElementById('landing-join-game').addEventListener('click', ()=>goToSetup('join'));
+document.getElementById('landing-rules-link').addEventListener('click', (e)=>{
+  e.preventDefault();
+  showRulesModal();
+});
+document.getElementById('back-to-landing').addEventListener('click', (e)=>{ e.preventDefault(); goToLanding(); });
+document.getElementById('back-to-landing-join').addEventListener('click', (e)=>{ e.preventDefault(); goToLanding(); });
+
+function applyModeUI(mode){
+  currentMode = mode;
+  document.querySelectorAll('#mode-row .mode-btn').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+  document.getElementById('local-and-host-config').style.display = currentMode==='join' ? 'none' : 'block';
+  document.getElementById('join-config').style.display = currentMode==='join' ? 'block' : 'none';
+  document.getElementById('turn-settings-card').style.display = currentMode==='local' ? 'none' : 'block';
+  document.getElementById('room-card').style.display = currentMode==='host' ? 'block' : 'none';
+  const turnRoleHint = document.getElementById('turn-role-hint');
+  if(currentMode==='host'){
+    turnRoleHint.innerHTML = 'If a player can\'t connect to you, setting this up on <b>your</b> device is normally enough to fix it for everyone — they usually don\'t need to do anything on their end. <span class="rules-toggle" id="turn-help-toggle" style="display:inline;margin:0;">How do I get one? ▾</span>';
+    document.getElementById('turn-help-toggle').addEventListener('click', ()=>{
+      document.getElementById('turn-help-panel').classList.toggle('show');
+    });
+  } else if(currentMode==='join'){
+    turnRoleHint.innerHTML = 'You usually don\'t need this — if your host has set up a relay on their end, that\'s normally enough. Only add your own if connecting still fails after they\'ve done so. <span class="rules-toggle" id="turn-help-toggle" style="display:inline;margin:0;">How do I get one? ▾</span>';
+    document.getElementById('turn-help-toggle').addEventListener('click', ()=>{
+      document.getElementById('turn-help-panel').classList.toggle('show');
+    });
+  }
+  const seatsHint = document.getElementById('seats-hint');
+  const startBtn = document.getElementById('start-btn');
+  if(currentMode==='host'){
+    seatsHint.textContent = 'Seat 0 is always you. Mark other seats Computer or Network, then create a room below and share the code.';
+    startBtn.textContent = 'Start hosted game';
+  } else {
+    seatsHint.textContent = 'Mark each seat Human or Computer. Team partners sit across from each other.';
+    startBtn.textContent = 'Deal the cards';
+  }
+  if(currentMode!=='join') buildSeatRows(selectedCount || 4);
+}
+
+document.querySelectorAll('#mode-row .mode-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{ applyModeUI(btn.dataset.mode); });
+});
+
+document.getElementById('turn-help-toggle').addEventListener('click', ()=>{
+  document.getElementById('turn-help-panel').classList.toggle('show');
+});
+
+function updateTurnSimpleStatus(active){
+  const dot = document.getElementById('turn-simple-dot');
+  const text = document.getElementById('turn-simple-text');
+  if(!dot || !text) return;
+  if(active){
+    dot.style.background = 'var(--good)';
+    text.textContent = 'Network relay active — should help connections succeed across different networks and firewalls.';
+  } else {
+    dot.style.background = 'var(--felt-line)';
+    text.textContent = 'No network relay configured — connections may fail across different networks or firewalls.';
+  }
+}
+
+function loadTurnSettingsIntoForm(prefix){
+  try{
+    const savedUrl = localStorage.getItem('canasta_turn_url');
+    document.getElementById('turn-url-input').value = savedUrl || '';
+    document.getElementById('turn-username-input').value = localStorage.getItem('canasta_turn_username') || '';
+    document.getElementById('turn-credential-input').value = localStorage.getItem('canasta_turn_credential') || '';
+    const statusEl = document.getElementById('turn-status-line');
+    const embedded = (typeof decodeEmbeddedTurnDefault==='function') ? decodeEmbeddedTurnDefault() : null;
+    const p = prefix ? prefix + ' ' : '';
+    if(savedUrl){
+      statusEl.textContent = p + (embedded
+        ? 'Using the settings saved on this device (this file also has a relay embedded, but per-device settings take priority over it).'
+        : 'Using the settings saved on this device.');
+      statusEl.className = 'status-line';
+    } else if(embedded){
+      statusEl.textContent = p + 'This copy of the file has a relay embedded — it\'s active even though these fields are blank.';
+      statusEl.className = 'status-line ok';
+    } else {
+      statusEl.textContent = p.trim();
+      statusEl.className = 'status-line';
+    }
+    updateTurnSimpleStatus(!!(savedUrl || embedded));
+  } catch(e){ /* localStorage unavailable */ }
+}
+loadTurnSettingsIntoForm();
+
+document.getElementById('turn-advanced-toggle').addEventListener('click', ()=>{
+  const panel = document.getElementById('turn-advanced-panel');
+  const toggle = document.getElementById('turn-advanced-toggle');
+  const showing = panel.style.display === 'block';
+  panel.style.display = showing ? 'none' : 'block';
+  toggle.textContent = showing ? 'Advanced settings ▾' : 'Advanced settings ▴';
+});
+
+document.getElementById('turn-save-btn').addEventListener('click', ()=>{
+  const statusEl = document.getElementById('turn-status-line');
+  const url = document.getElementById('turn-url-input').value.trim();
+  const username = document.getElementById('turn-username-input').value.trim();
+  const credential = document.getElementById('turn-credential-input').value.trim();
+  try{
+    if(url) localStorage.setItem('canasta_turn_url', url); else localStorage.removeItem('canasta_turn_url');
+    if(username) localStorage.setItem('canasta_turn_username', username); else localStorage.removeItem('canasta_turn_username');
+    if(credential) localStorage.setItem('canasta_turn_credential', credential); else localStorage.removeItem('canasta_turn_credential');
+    loadTurnSettingsIntoForm(url ? 'Saved.' : 'Cleared — falling back to any embedded default, or STUN only.');
+  } catch(e){
+    statusEl.textContent = 'Could not save — this browser may be blocking local storage.';
+    statusEl.className = 'status-line warn';
+  }
+});
+document.getElementById('turn-clear-btn').addEventListener('click', ()=>{
+  try{
+    localStorage.removeItem('canasta_turn_url');
+    localStorage.removeItem('canasta_turn_username');
+    localStorage.removeItem('canasta_turn_credential');
+  } catch(e){}
+  loadTurnSettingsIntoForm('Cleared this device\'s saved settings.');
+});
+
+document.getElementById('turn-generate-embed-btn').addEventListener('click', ()=>{
+  const url = document.getElementById('turn-url-input').value.trim();
+  const username = document.getElementById('turn-username-input').value.trim();
+  const credential = document.getElementById('turn-credential-input').value.trim();
+  const statusEl = document.getElementById('turn-status-line');
+  if(!url){
+    statusEl.textContent = 'Fill in the fields above first, then generate the code.';
+    statusEl.className = 'status-line warn';
+    return;
+  }
+  const json = JSON.stringify({url, username, credential});
+  const encoded = btoa(unescape(encodeURIComponent(json)));
+  document.getElementById('turn-embed-output').value = encoded;
+  document.getElementById('turn-embed-output-wrap').style.display = 'block';
+  statusEl.textContent = '';
+});
+
+document.getElementById('create-room-btn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('create-room-btn');
+  const statusEl = document.getElementById('room-status-line');
+  const networkSeatIds = [];
+  document.querySelectorAll('#seats-container .toggle-pair').forEach(tp=>{
+    const seatId = Number(tp.dataset.seat);
+    const active = tp.querySelector('button.active');
+    if(active && active.dataset.val==='network') networkSeatIds.push(seatId);
+  });
+  if(networkSeatIds.length===0){
+    statusEl.textContent = 'Mark at least one seat as Network first.';
+    statusEl.className = 'status-line warn';
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Creating…';
+  statusEl.textContent = ''; statusEl.className = 'status-line';
+  try{
+    const code = await hostStartRoom(networkSeatIds);
+    document.getElementById('room-code-value').textContent = code;
+    document.getElementById('room-code-display').style.display = 'block';
+    btn.textContent = 'Room created — regenerate';
+    networkSeatIds.forEach(seatId=>{
+      const s = document.getElementById(`net-status-${seatId}`);
+      if(s){ s.style.display='block'; s.textContent = 'Waiting for a player to join with the room code…'; s.className='status-line'; }
+    });
+    updateHostStartButtonState();
+  } catch(e){
+    statusEl.textContent = 'Could not create the room: ' + (e && e.message ? e.message : 'the signaling service may be unavailable.');
+    statusEl.className = 'status-line warn';
+    btn.textContent = 'Create room';
+  } finally { btn.disabled = false; }
+});
+document.getElementById('room-copy-btn').addEventListener('click', ()=>{
+  const code = document.getElementById('room-code-value').textContent;
+  if(navigator.clipboard) navigator.clipboard.writeText(code).catch(()=>{});
+});
+
+document.querySelectorAll('#count-row .count-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#count-row .count-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedCount = parseInt(btn.dataset.n,10);
+    buildSeatRows(selectedCount);
+  });
+});
+
+document.querySelectorAll('#threshold-row .count-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#threshold-row .count-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedThreshold = btn.dataset.t === 'standard' ? 'standard' : parseInt(btn.dataset.t,10);
+  });
+});
+
+function renderSeatingDiagram(n){
+  const wrap = document.getElementById('seating-diagram-wrap');
+  if(n!==4){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = `
+    <div style="margin-top:16px;padding-top:16px;border-top:1px dashed var(--felt-line);">
+      <div style="font-size:11px;color:var(--ivory-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;">Seating &amp; turn order</div>
+      <svg viewBox="0 0 320 260" style="width:100%;max-width:320px;display:block;margin:0 auto;">
+        <ellipse cx="160" cy="130" rx="95" ry="70" fill="rgba(196,154,69,0.08)" stroke="var(--felt-line)" stroke-width="1.5"/>
+        <!-- rotation path arrows: South -> East -> North -> West -> South -->
+        <path d="M 160 205 A 95 95 0 0 0 245 130" fill="none" stroke="var(--brass)" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrowhead)"/>
+        <path d="M 245 130 A 95 95 0 0 0 160 55" fill="none" stroke="var(--brass)" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrowhead)"/>
+        <path d="M 160 55 A 95 95 0 0 0 75 130" fill="none" stroke="var(--brass)" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrowhead)"/>
+        <path d="M 75 130 A 95 95 0 0 0 160 205" fill="none" stroke="var(--brass)" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrowhead)"/>
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="var(--brass)"/>
+          </marker>
+        </defs>
+        <!-- North: Partner -->
+        <circle cx="160" cy="55" r="26" fill="var(--felt-panel)" stroke="var(--freeze-ice)" stroke-width="2"/>
+        <text x="160" y="51" text-anchor="middle" font-size="10" fill="var(--ivory)" font-weight="600">Partner</text>
+        <text x="160" y="63" text-anchor="middle" font-size="9" fill="var(--ivory-dim)">North · 3rd</text>
+        <!-- East: right opponent -->
+        <circle cx="245" cy="130" r="26" fill="var(--felt-panel)" stroke="var(--felt-line)" stroke-width="2"/>
+        <text x="245" y="126" text-anchor="middle" font-size="10" fill="var(--ivory)" font-weight="600">Opponent</text>
+        <text x="245" y="138" text-anchor="middle" font-size="9" fill="var(--ivory-dim)">East · 2nd</text>
+        <!-- West: left opponent -->
+        <circle cx="75" cy="130" r="26" fill="var(--felt-panel)" stroke="var(--felt-line)" stroke-width="2"/>
+        <text x="75" y="126" text-anchor="middle" font-size="10" fill="var(--ivory)" font-weight="600">Opponent</text>
+        <text x="75" y="138" text-anchor="middle" font-size="9" fill="var(--ivory-dim)">West · 4th</text>
+        <!-- South: You -->
+        <circle cx="160" cy="205" r="28" fill="var(--brass)" stroke="var(--brass-bright)" stroke-width="2"/>
+        <text x="160" y="201" text-anchor="middle" font-size="11" fill="var(--ink)" font-weight="700">You</text>
+        <text x="160" y="213" text-anchor="middle" font-size="9" fill="rgba(28,25,18,0.7)">South · 1st</text>
+        <!-- team pairing lines -->
+        <line x1="160" y1="81" x2="160" y2="177" stroke="var(--freeze-ice)" stroke-width="1" stroke-dasharray="2 3" opacity="0.6"/>
+      </svg>
+      <p style="font-size:11.5px;color:var(--ivory-dim);text-align:center;margin-top:8px;line-height:1.5;">
+        Your partner sits across from you (North) and shares your team meld pool.<br>
+        Turns pass to your right first: <b style="color:var(--brass-bright)">You → East → Partner → West → You</b>.
+      </p>
+    </div>
+  `;
+}
+
+function buildSeatRows(n){
+  const container = document.getElementById('seats-container');
+  container.innerHTML='';
+  const names = seatNamesByCount[n] || [];
+  const teamColors = ['#c49a45','#7fb8d1','#c49a45','#7fb8d1'];
+  for(let i=0;i<n;i++){
+    const row = document.createElement('div');
+    row.className='seat-row';
+    let teamNote = '';
+    if(n===4) teamNote = i%2===0 ? ' · Team A' : ' · Team B';
+
+    if(currentMode==='host'){
+      const isSelf = i===0;
+      row.innerHTML = `
+        <span class="team-chip" style="background:${n===4?teamColors[i]:'#c49a45'}"></span>
+        <input type="text" value="${isSelf ? (names[i]||'You') : (names[i]||'Player '+(i+1))}" data-seat="${i}"/>
+        <span style="font-size:11px;color:var(--ivory-dim);white-space:nowrap;">${teamNote}</span>
+        ${isSelf
+          ? '<span class="badge" style="font-size:10px;background:rgba(196,154,69,0.25);padding:4px 10px;border-radius:20px;white-space:nowrap;">You (host)</span>'
+          : `<div class="toggle-pair" data-seat="${i}"><button data-val="computer" class="active">Computer</button><button data-val="network">Network</button></div>`}
+      `;
+      container.appendChild(row);
+      if(!isSelf){
+        const statusEl = document.createElement('div');
+        statusEl.className = 'status-line';
+        statusEl.id = `net-status-${i}`;
+        statusEl.style.cssText = 'margin:-4px 0 8px 22px;';
+        statusEl.style.display = 'none';
+        container.appendChild(statusEl);
+        const tp = row.querySelector('.toggle-pair');
+        tp.querySelectorAll('button').forEach(b=>{
+          b.addEventListener('click', ()=>{
+            tp.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+            b.classList.add('active');
+            statusEl.style.display = b.dataset.val==='network' ? 'block' : 'none';
+            statusEl.textContent = b.dataset.val==='network' ? 'Waiting for a player to join with the room code…' : '';
+            statusEl.className = 'status-line';
+            updateHostStartButtonState();
+          });
+        });
+      }
+      continue;
+    }
+
+    // LOCAL mode (existing behavior — any mix of human/computer seats, hotseat-friendly)
+    const isHuman = i===0;
+    row.innerHTML = `
+      <span class="team-chip" style="background:${n===4?teamColors[i]:'#c49a45'}"></span>
+      <input type="text" value="${names[i] || 'Player '+(i+1)}" data-seat="${i}"/>
+      <span style="font-size:11px;color:var(--ivory-dim);white-space:nowrap;">${teamNote}</span>
+      <div class="toggle-pair" data-seat="${i}">
+        <button data-val="human" class="${isHuman?'active':''}">Human</button>
+        <button data-val="computer" class="${!isHuman?'active':''}">Computer</button>
+      </div>
+    `;
+    container.appendChild(row);
+    row.querySelector('.toggle-pair').querySelectorAll('button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        row.querySelectorAll('.toggle-pair button').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+  }
+  renderSeatingDiagram(n);
+  if(currentMode==='host') updateHostStartButtonState();
+}
+
+// Tracks connection status changes (called from the PeerJS connection handlers in
+// hostStartRoom/guestJoinRoom) to keep the seat rows' status text and the Start button in sync.
+function onNetStatusChange(){
+  if(currentMode==='host'){
+    for(const seatIdStr of Object.keys(Net.hostConnections)){
+      const seatId = Number(seatIdStr);
+      const conn = Net.hostConnections[seatId];
+      const statusEl = document.getElementById(`net-status-${seatId}`);
+      if(statusEl){
+        if(conn.status==='connected'){
+          const nm = Net.pendingGuestNames[seatId];
+          statusEl.textContent = nm ? `Connected: ${nm}` : 'Connected';
+          statusEl.className = 'status-line ok';
+          if(nm){
+            const inp = document.querySelector(`#seats-container input[data-seat="${seatId}"]`);
+            if(inp) inp.value = nm;
+          }
+        } else if(conn.status==='disconnected'){
+          statusEl.textContent = 'Disconnected — they can rejoin using the same room code.';
+          statusEl.className = 'status-line warn';
+        }
+      }
+    }
+    updateHostStartButtonState();
+  }
+}
+
+function updateHostStartButtonState(){
+  const startBtn = document.getElementById('start-btn');
+  if(currentMode!=='host'){ startBtn.disabled = false; return; }
+  const rows = document.querySelectorAll('#seats-container .toggle-pair');
+  let allConnected = true;
+  rows.forEach(tp=>{
+    const seatId = Number(tp.dataset.seat);
+    const active = tp.querySelector('button.active');
+    if(active && active.dataset.val==='network'){
+      const conn = Net.hostConnections[seatId];
+      if(!conn || conn.status!=='connected') allConnected=false;
+    }
+  });
+  startBtn.disabled = !allConnected;
+}
+buildSeatRows(4);
+document.querySelector('#count-row .count-btn[data-n="4"]').classList.add('active');
+selectedCount = 4;
+
+const depthSlider = document.getElementById('depth-slider');
+const depthLabels = {1:'1 — Casual',2:'2 — Steady',3:'3 — Skilled',4:'4 — Sharp',5:'5 — Ruthless'};
+depthSlider.addEventListener('input', ()=>{
+  document.getElementById('depth-val').textContent = depthLabels[depthSlider.value];
+});
+
+const RULES_HTML = `
+  <h2>House rules</h2>
+  <p class="sub">Frozen piles, bonus threes, and a team meld pool.</p>
+  <div style="font-size:14px;line-height:1.65;color:var(--ivory-dim);">
+    <p><b style="color:var(--ivory);">Black 3s</b> auto-meld the instant they're drawn or dealt (+100 each), and you immediately draw a replacement — this chains if another black 3 comes up.</p>
+    <p><b style="color:var(--ivory);">Red 3s</b> sit in your hand like normal cards. Meld one voluntarily for the same +100 bonus and a replacement draw, or discard it to freeze the pile. A red 3 still stuck in a hand at hand's end costs -100 instead.</p>
+    <p><b style="color:var(--ivory);">Wild discards</b> (2s or Jokers) freeze the pile hard: it can only be stolen with a natural pair in hand — existing table melds can't help.</p>
+    <p><b style="color:var(--ivory);">Freezes persist</b> until the pile is actually taken, and the pile can never be taken while a wild or red 3 sits on top — it must be buried first.</p>
+    <ul style="margin:10px 0;padding-left:20px;">
+      <li>Melds need ≥1 natural card and at most 3 wilds.</li>
+      <li>Canastas (7+ of a rank) score 500 if natural, 300 if mixed with wilds.</li>
+      <li>Opening meld minimum: 50 pts under 1500 team score, 90 up to 3000, 120 above.</li>
+      <li>Your team needs at least one completed canasta before going out — the game blocks any meld or discard that would leave you with an empty hand until you have one.</li>
+      <li>Game ends when a team passes 5000 points.</li>
+      <li>There's no move log — tracking what's been played is part of the game.</li>
+    </ul>
+  </div>
+  <button class="action-btn primary" id="rules-modal-close-btn" style="margin-top:10px;width:100%;">Close</button>
+`;
+function showRulesModal(){
+  document.getElementById('modal-box').innerHTML = RULES_HTML;
+  document.getElementById('modal-overlay').classList.add('show');
+  document.getElementById('rules-modal-close-btn').addEventListener('click', ()=>{
+    document.getElementById('modal-overlay').classList.remove('show');
+  });
+}
+
+function showGameMenu(){
+  document.getElementById('modal-box').innerHTML = `
+    <h2>Menu</h2>
+    <p class="sub">Round ${G ? G.roundNum : 1}</p>
+    <button class="action-btn primary" id="menu-rules-btn" style="width:100%;margin-bottom:10px;">Rules</button>
+    <button class="action-btn" id="menu-leave-btn" style="width:100%;background:var(--danger);border-color:var(--danger);color:var(--ivory);">Leave game</button>
+    <button class="icon-btn" id="menu-close-btn" style="width:100%;margin-top:14px;">Cancel</button>
+  `;
+  document.getElementById('modal-overlay').classList.add('show');
+  document.getElementById('menu-rules-btn').addEventListener('click', ()=>{ showRulesModal(); });
+  document.getElementById('menu-leave-btn').addEventListener('click', ()=>{
+    if(confirm('Leave this game? This will disconnect you and cannot be undone.')){
+      location.reload();
+    }
+  });
+  document.getElementById('menu-close-btn').addEventListener('click', ()=>{
+    document.getElementById('modal-overlay').classList.remove('show');
+  });
+}
+
+document.getElementById('start-btn').addEventListener('click', ()=>{
+  const n = selectedCount || 4;
+  const rows = document.querySelectorAll('#seats-container .seat-row');
+  const seatConfigs = [];
+  rows.forEach((row,i)=>{
+    const name = row.querySelector('input').value.trim() || ('Player '+(i+1));
+    if(currentMode==='host'){
+      const toggle = row.querySelector('.toggle-pair button.active');
+      const isHuman = i===0 || (toggle && toggle.dataset.val==='network');
+      seatConfigs.push({name, isHuman});
+    } else {
+      const isHuman = row.querySelector('.toggle-pair button.active').dataset.val === 'human';
+      seatConfigs.push({name, isHuman});
+    }
+  });
+  if(currentMode!=='host' && !seatConfigs.some(s=>s.isHuman)){
+    alert('At least one seat should be Human to play — mark a seat Human to continue.');
+    return;
+  }
+  const aiDepth = parseInt(depthSlider.value,10);
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('game-screen').style.display='block';
+  if(currentMode==='host'){
+    Net.mode = 'host';
+    Net.mySeatId = 0;
+  }
+  setupGame(n, seatConfigs, aiDepth, selectedThreshold);
+});
+
+document.getElementById('game-menu-btn').addEventListener('click', ()=>{
+  showGameMenu();
+});
+document.getElementById('sort-btn').addEventListener('click', ()=>{ renderHand(); });
+
+document.getElementById('join-generate-btn').addEventListener('click', async ()=>{
+  const name = document.getElementById('join-name-input').value.trim() || 'Guest';
+  const roomCode = document.getElementById('join-room-input').value;
+  const statusEl = document.getElementById('join-status-line');
+  if(!roomCode.trim()){ statusEl.textContent = 'Enter the room code from your host first.'; statusEl.className='status-line warn'; return; }
+  const btn = document.getElementById('join-generate-btn');
+  btn.disabled = true; btn.textContent = 'Connecting…';
+  statusEl.textContent = ''; statusEl.className = 'status-line';
+  try{
+    const res = await guestJoinRoom(roomCode, name);
+    if(!res.ok){
+      statusEl.textContent = res.reason || 'Could not connect.'; statusEl.className='status-line warn';
+      return;
+    }
+    statusEl.textContent = 'Connected — choose your seat…';
+    statusEl.className = 'status-line ok';
+    btn.textContent = 'Connected';
+  } catch(e){
+    statusEl.textContent = 'Could not connect: ' + (e && e.message ? e.message : 'check the room code and try again.');
+    statusEl.className = 'status-line warn';
+    btn.textContent = 'Connect';
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

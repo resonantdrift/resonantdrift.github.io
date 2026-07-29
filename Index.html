@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heartside Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --dusk: #1b2436;
+  --dusk-deep: #10162399;
+  --dusk-deeper: #0d1220;
+  --card: #232e46;
+  --cream: #f5efe3;
+  --cream-dim: #b9c0d4;
+  --amber: #f2b155;
+  --amber-bright: #ffcf85;
+  --coral: #e8896a;
+  --wire: #3a4562;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;background:var(--dusk);color:var(--cream);
+  font-family:'Manrope',sans-serif;
+  overflow-x:hidden;
+}
+h1,h2,h3,.display{font-family:'Fraunces',serif;}
+a{color:inherit;}
+::selection{background:var(--amber);color:var(--dusk-deeper);}
+
+/* ---------- Starfield backdrop ---------- */
+.sky{
+  position:absolute;top:0;left:0;right:0;height:640px;overflow:hidden;pointer-events:none;
+  background:
+    radial-gradient(ellipse 900px 500px at 50% -80px, #2a3654 0%, transparent 70%),
+    linear-gradient(180deg, var(--dusk-deeper) 0%, var(--dusk) 55%, var(--dusk) 100%);
+}
+.star{position:absolute;border-radius:50%;background:#fff;opacity:0.55;animation:twinkle 4s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:0.2;}50%{opacity:0.75;}}
+
+/* ---------- Header ---------- */
+header{position:relative;z-index:2;max-width:1040px;margin:0 auto;padding:28px 24px 0;display:flex;align-items:center;justify-content:space-between;}
+.wordmark{font-family:'Fraunces',serif;font-weight:600;font-size:19px;letter-spacing:0.2px;display:flex;align-items:center;gap:9px;}
+.wordmark .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px 3px rgba(242,177,85,0.6);}
+nav a{font-size:14px;color:var(--cream-dim);text-decoration:none;margin-left:26px;}
+nav a:hover{color:var(--cream);}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;z-index:2;max-width:760px;margin:0 auto;padding:86px 24px 20px;text-align:center;}
+.hero h1{font-size:52px;font-weight:600;line-height:1.08;margin:0 0 20px;letter-spacing:-0.5px;}
+.hero h1 em{font-style:italic;color:var(--amber-bright);}
+.hero p{font-size:18px;line-height:1.6;color:var(--cream-dim);max-width:560px;margin:0 auto 34px;}
+.cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:30px;
+  font-family:'Manrope',sans-serif;font-weight:700;font-size:15px;text-decoration:none;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.btn-primary{background:linear-gradient(180deg,var(--amber-bright),var(--amber));color:var(--dusk-deeper);box-shadow:0 8px 22px rgba(242,177,85,0.35);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(242,177,85,0.45);}
+.btn-ghost{border:1px solid var(--wire);color:var(--cream);}
+.btn-ghost:hover{border-color:var(--amber);color:var(--amber-bright);}
+
+/* ---------- Porch light string (signature element / games nav) ---------- */
+.string-wrap{position:relative;z-index:2;max-width:900px;margin:64px auto 0;padding:0 24px;}
+.wire-svg{width:100%;display:block;height:70px;}
+.wire-svg path{fill:none;stroke:var(--wire);stroke-width:2;}
+.bulbs{display:flex;justify-content:space-between;margin-top:-34px;padding:0 4%;}
+.bulb-stop{display:flex;flex-direction:column;align-items:center;text-decoration:none;color:inherit;width:110px;}
+.bulb{
+  width:30px;height:38px;border-radius:50% 50% 46% 46%;position:relative;margin-bottom:10px;
+  background:var(--wire);transition:all .25s ease;
+}
+.bulb::before{content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:3px;height:8px;background:var(--wire);}
+.bulb-stop.lit .bulb{
+  background:radial-gradient(circle at 35% 30%, var(--amber-bright), var(--amber) 55%, #c47f2e 100%);
+  box-shadow:0 0 22px 8px rgba(242,177,85,0.55), 0 0 50px 18px rgba(242,177,85,0.25);
+  animation:glow 3s ease-in-out infinite;
+}
+@keyframes glow{0%,100%{filter:brightness(1);}50%{filter:brightness(1.12);}}
+.bulb-label{font-size:13.5px;font-weight:600;color:var(--cream-dim);}
+.bulb-stop.lit .bulb-label{color:var(--amber-bright);}
+.bulb-stop.dim .bulb-label{color:#6c7593;}
+.bulb-sub{font-size:11px;color:#5c6485;margin-top:2px;}
+.bulb-stop.dim .bulb-sub{color:#5c6485;}
+.bulb-stop.lit .bulb-sub{color:var(--cream-dim);}
+.bulb-stop{cursor:default;}
+.bulb-stop.lit{cursor:pointer;}
+.bulb-stop.lit:hover .bulb{transform:scale(1.08);}
+
+/* ---------- Games section ---------- */
+.games{position:relative;z-index:2;max-width:900px;margin:70px auto 0;padding:0 24px;}
+.game-card{
+  background:var(--card);border:1px solid var(--wire);border-radius:20px;
+  padding:34px 36px;display:flex;align-items:center;gap:30px;flex-wrap:wrap;
+  box-shadow:0 20px 50px rgba(0,0,0,0.35);
+}
+.game-card .thumb{
+  width:120px;height:120px;border-radius:16px;flex-shrink:0;
+  background:
+    repeating-linear-gradient(135deg, var(--amber) 0 10px, #8a6a2c 10px 20px);
+  border:3px solid #6b4529;box-shadow:0 10px 24px rgba(0,0,0,0.4);
+  display:flex;align-items:center;justify-content:center;font-size:38px;
+}
+.game-card .info{flex:1;min-width:220px;}
+.game-card h3{font-size:26px;margin:0 0 6px;font-weight:600;}
+.game-card p{color:var(--cream-dim);font-size:15px;line-height:1.6;margin:0 0 18px;max-width:480px;}
+.tag-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.tag{font-size:11.5px;background:rgba(242,177,85,0.14);color:var(--amber-bright);border:1px solid rgba(242,177,85,0.3);padding:4px 11px;border-radius:20px;font-weight:600;}
+
+.soon-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:20px;}
+.soon-card{
+  border:1px dashed var(--wire);border-radius:16px;padding:20px 22px;color:#7b84a3;
+}
+.soon-card .dot-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.soon-card .dot-row span.d{width:7px;height:7px;border-radius:50%;background:#4a5474;}
+.soon-card h4{margin:0;font-size:15px;color:#9aa2bd;font-weight:600;}
+.soon-card p{margin:6px 0 0;font-size:13px;color:#6b7392;}
+
+/* ---------- About ---------- */
+.about{position:relative;z-index:2;max-width:680px;margin:100px auto 0;padding:0 24px;text-align:center;}
+.about h2{font-size:30px;margin:0 0 18px;}
+.about p{font-size:16.5px;line-height:1.75;color:var(--cream-dim);}
+.about p + p{margin-top:14px;}
+
+/* ---------- Footer ---------- */
+footer{position:relative;z-index:2;margin-top:100px;border-top:1px solid var(--wire);padding:30px 24px 40px;text-align:center;}
+footer .wordmark{justify-content:center;margin-bottom:8px;}
+footer p{font-size:13px;color:#6b7392;margin:0;}
+
+@media (max-width:640px){
+  .hero h1{font-size:38px;}
+  .hero p{font-size:16px;}
+  .bulbs{flex-wrap:wrap;gap:22px 8px;justify-content:center;}
+  .bulb-stop{width:80px;}
+  .wire-svg{display:none;}
+  .string-wrap{margin-top:44px;}
+  .game-card{padding:26px 22px;}
+  nav a{margin-left:16px;font-size:13px;}
+}
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<header>
+  <div class="wordmark"><span class="dot"></span>Heartside Games</div>
+  <nav>
+    <a href="#games">Games</a>
+    <a href="#about">About</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>The porch light's <em>on.</em></h1>
+  <p>Heartside Games makes quick, clever games worth gathering around — starting with a deep-cut classic your family already half-remembers the rules to.</p>
+  <div class="cta-row">
+    <a href="canasta.html" class="btn btn-primary">Play Canasta →</a>
+    <a href="#about" class="btn btn-ghost">What's this?</a>
+  </div>
+</section>
+
+<div class="string-wrap">
+  <svg class="wire-svg" viewBox="0 0 900 70" preserveAspectRatio="none">
+    <path d="M 20 10 Q 225 75 450 15 Q 675 -35 880 10"/>
+  </svg>
+  <div class="bulbs" id="games">
+    <a href="canasta.html" class="bulb-stop lit">
+      <div class="bulb"></div>
+      <div class="bulb-label">Canasta</div>
+      <div class="bulb-sub">2–4 players</div>
+    </a>
+    <div class="bulb-stop dim">
+      <div class="bulb"></div>
+      <div class="bulb-label">Coming soon</div>
+      <div class="bulb-sub">—</div>
+    </div>
+    <div class="bulb-stop dim">
+      <div class="bulb"></div>
+      <div class="bulb-label">Coming soon</div>
+      <div class="bulb-sub">—</div>
+    </div>
+    <div class="bulb-stop dim">
+      <div class="bulb"></div>
+      <div class="bulb-label">Coming soon</div>
+      <div class="bulb-sub">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="games">
+  <div class="game-card">
+    <div class="thumb">🃏</div>
+    <div class="info">
+      <div class="tag-row">
+        <span class="tag">2–4 players</span>
+        <span class="tag">Play online or pass-and-play</span>
+        <span class="tag">No install</span>
+      </div>
+      <h3>Canasta</h3>
+      <p>The classic partnership card game, with a few house rules that make it sharper: frozen piles, bonus threes, and a shared team meld pool. Play solo against the computer, pass the phone around the table, or host a room and invite people from their own devices.</p>
+      <a href="canasta.html" class="btn btn-primary">Play now →</a>
+    </div>
+  </div>
+
+  <div class="soon-row">
+    <div class="soon-card">
+      <div class="dot-row"><span class="d"></span><h4>Another table classic</h4></div>
+      <p>Still deciding what's next.</p>
+    </div>
+    <div class="soon-card">
+      <div class="dot-row"><span class="d"></span><h4>Something for the kids</h4></div>
+      <p>Lower the age floor, keep the fun.</p>
+    </div>
+    <div class="soon-card">
+      <div class="dot-row"><span class="d"></span><h4>Your idea here</h4></div>
+      <p>We're taking requests.</p>
+    </div>
+  </div>
+</div>
+
+<section class="about" id="about">
+  <h2>Why Heartside</h2>
+  <p>We're building games for the table you already have — the one with too few chairs and too much laughter. No app store, no account, no ads. Open a link, and you're playing.</p>
+  <p>Every game gets the same treatment: real rules (including the house-rule arguments every family has), a design that doesn't feel like a spreadsheet, and just enough computer opponents that you never have to wait for a fourth.</p>
+</section>
+
+<footer>
+  <div class="wordmark"><span class="dot"></span>Heartside Games</div>
+  <p>© 2026 Heartside Games. Made for game night.</p>
+</footer>
+
+<script>
+// Scatter a handful of stars across the sky backdrop
+const sky = document.getElementById('sky');
+for(let i=0;i<50;i++){
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random()*2 + 1;
+  s.style.width = size+'px';
+  s.style.height = size+'px';
+  s.style.left = (Math.random()*100)+'%';
+  s.style.top = (Math.random()*80)+'%';
+  s.style.animationDelay = (Math.random()*4)+'s';
+  sky.appendChild(s);
+}
+</script>
+</body>
+</html>

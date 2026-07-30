@@ -620,6 +620,51 @@ body[data-cardback="mountain"] .stock-pile, body[data-cardback="mountain"] .mini
 
 <script>
 /* =========================================================================
+   GLOBAL ERROR REPORTER — shows uncaught errors as a visible on-screen banner
+   instead of failing silently. This is deliberately first in the file and
+   depends on nothing else, so it works even if something else fails to load.
+   ========================================================================= */
+(function setupGlobalErrorReporter(){
+  function showAppError(message){
+    try{
+      let banner = document.getElementById('error-banner');
+      if(!banner){
+        banner = document.createElement('div');
+        banner.id = 'error-banner';
+        banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#c1584a;color:#fff;padding:14px 16px;font-family:monospace;font-size:12px;z-index:99999;max-height:45vh;overflow-y:auto;white-space:pre-wrap;word-break:break-word;box-shadow:0 -4px 20px rgba(0,0,0,0.4);';
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '✕ Dismiss';
+        closeBtn.style.cssText = 'display:block;margin-bottom:8px;background:rgba(255,255,255,0.25);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-family:inherit;font-size:12px;font-weight:bold;';
+        closeBtn.onclick = function(){ banner.style.display='none'; };
+        banner.appendChild(closeBtn);
+        const label = document.createElement('div');
+        label.textContent = 'Something went wrong — please screenshot this and share it:';
+        label.style.cssText = 'font-weight:bold;margin-bottom:6px;';
+        banner.appendChild(label);
+        const content = document.createElement('div');
+        content.id = 'error-banner-content';
+        banner.appendChild(content);
+        (document.body || document.documentElement).appendChild(banner);
+      }
+      banner.style.display = 'block';
+      const content = document.getElementById('error-banner-content');
+      const entry = document.createElement('div');
+      entry.style.cssText = 'border-top:1px solid rgba(255,255,255,0.3);padding-top:8px;margin-top:8px;';
+      entry.textContent = message;
+      content.appendChild(entry);
+    }catch(e){ /* if even the error reporter fails, there's nothing more we can do */ }
+  }
+  window.addEventListener('error', function(e){
+    showAppError('Error: ' + (e.message||'unknown') + (e.filename ? ('\nat line ' + e.lineno + ':' + e.colno) : ''));
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    const reason = e.reason;
+    showAppError('Unhandled promise rejection: ' + (reason && reason.message ? reason.message : String(reason)));
+  });
+  window.__showAppError = showAppError; // used by specific try/catch blocks below to report cleanly
+})();
+
+/* =========================================================================
    ENGINE — pure rules functions (unit-tested standalone before integration)
    ========================================================================= */
 const SUITS = ['S','H','D','C'];
@@ -2591,31 +2636,37 @@ function showGameMenu(){
 }
 
 document.getElementById('start-btn').addEventListener('click', ()=>{
-  const n = selectedCount || 4;
-  const rows = document.querySelectorAll('#seats-container .seat-row');
-  const seatConfigs = [];
-  rows.forEach((row,i)=>{
-    const name = row.querySelector('input').value.trim() || ('Player '+(i+1));
-    if(currentMode==='host'){
-      const isHuman = i===0 || seatSwitchIsOn(row);
-      seatConfigs.push({name, isHuman});
-    } else {
-      const isHuman = seatSwitchIsOn(row);
-      seatConfigs.push({name, isHuman});
+  try{
+    const n = selectedCount || 4;
+    const rows = document.querySelectorAll('#seats-container .seat-row');
+    const seatConfigs = [];
+    rows.forEach((row,i)=>{
+      const name = row.querySelector('input').value.trim() || ('Player '+(i+1));
+      if(currentMode==='host'){
+        const isHuman = i===0 || seatSwitchIsOn(row);
+        seatConfigs.push({name, isHuman});
+      } else {
+        const isHuman = seatSwitchIsOn(row);
+        seatConfigs.push({name, isHuman});
+      }
+    });
+    if(currentMode!=='host' && !seatConfigs.some(s=>s.isHuman)){
+      alert('At least one seat should be Human to play — mark a seat Human to continue.');
+      return;
     }
-  });
-  if(currentMode!=='host' && !seatConfigs.some(s=>s.isHuman)){
-    alert('At least one seat should be Human to play — mark a seat Human to continue.');
-    return;
+    const aiDepth = parseInt(depthSlider.value,10);
+    document.getElementById('setup-screen').style.display='none';
+    document.getElementById('game-screen').style.display='block';
+    if(currentMode==='host'){
+      Net.mode = 'host';
+      Net.mySeatId = 0;
+    }
+    setupGame(n, seatConfigs, aiDepth, selectedThreshold);
+  } catch(err){
+    document.getElementById('game-screen').style.display='none';
+    document.getElementById('setup-screen').style.display='block';
+    if(window.__showAppError) window.__showAppError('Failed to start the game:\n' + (err && err.stack ? err.stack : String(err)));
   }
-  const aiDepth = parseInt(depthSlider.value,10);
-  document.getElementById('setup-screen').style.display='none';
-  document.getElementById('game-screen').style.display='block';
-  if(currentMode==='host'){
-    Net.mode = 'host';
-    Net.mySeatId = 0;
-  }
-  setupGame(n, seatConfigs, aiDepth, selectedThreshold);
 });
 
 document.getElementById('game-menu-btn').addEventListener('click', ()=>{

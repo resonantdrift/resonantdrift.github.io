@@ -92,7 +92,7 @@ button{font-family:'Inter',sans-serif;cursor:pointer;}
 
 .seats{margin-top:20px;display:flex;flex-direction:column;gap:10px;}
 .seat-row{
-  display:flex;align-items:center;gap:12px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
   background:rgba(0,0,0,0.18);border:1px solid var(--felt-line);
   border-radius:10px;padding:10px 14px;
 }
@@ -100,15 +100,24 @@ button{font-family:'Inter',sans-serif;cursor:pointer;}
   width:10px;height:10px;border-radius:50%;flex-shrink:0;
 }
 .seat-row input[type=text]{
-  flex:1;background:transparent;border:none;color:var(--ivory);font-size:14px;
+  flex:1 1 80px;min-width:70px;background:transparent;border:none;color:var(--ivory);font-size:14px;
   border-bottom:1px solid transparent;padding:4px 2px;
 }
 .seat-row input[type=text]:focus{outline:none;border-bottom:1px solid var(--brass);}
-.toggle-pair{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--felt-line);}
-.toggle-pair button{
-  padding:7px 14px;background:rgba(0,0,0,0.2);color:var(--ivory-dim);border:none;font-size:12px;font-weight:600;
+.seat-switch{display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0;user-select:none;}
+.seat-switch input{position:absolute;opacity:0;width:0;height:0;}
+.seat-switch-track{
+  position:relative;width:40px;height:23px;border-radius:24px;flex-shrink:0;
+  background:rgba(0,0,0,0.3);border:1px solid var(--felt-line);transition:background .2s ease,border-color .2s ease;
 }
-.toggle-pair button.active{background:var(--brass);color:var(--ink);}
+.seat-switch-thumb{
+  position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;
+  background:var(--ivory-dim);transition:transform .2s ease,background .2s ease;
+}
+.seat-switch input:checked ~ .seat-switch-track{background:var(--brass);border-color:var(--brass);}
+.seat-switch input:checked ~ .seat-switch-track .seat-switch-thumb{transform:translateX(17px);background:var(--ink);}
+.seat-switch-label{font-size:12.5px;font-weight:600;color:var(--ivory-dim);min-width:60px;}
+.seat-switch input:checked ~ .seat-switch-label{color:var(--brass-bright);}
 
 .depth-block{margin-top:20px;padding-top:18px;border-top:1px dashed var(--felt-line);}
 .depth-block label{font-size:13px;color:var(--ivory-dim);display:flex;justify-content:space-between;margin-bottom:8px;}
@@ -158,6 +167,7 @@ input[type=range]{width:100%;accent-color:var(--brass);}
 
 .table-stage{
   position:relative;
+  background: var(--felt);
   background: radial-gradient(ellipse at 50% 32%, color-mix(in srgb, var(--felt) 85%, white 8%), var(--felt) 55%, var(--felt-dark) 100%);
   border:9px solid var(--felt-panel);border-radius:44px;
   box-shadow: inset 0 0 60px rgba(0,0,0,0.45), 0 16px 34px rgba(0,0,0,0.4);
@@ -348,13 +358,33 @@ body[data-cardback="mountain"] .stock-pile, body[data-cardback="mountain"] .mini
 .modal-box .action-btn{margin-top:6px;}
 
 @media (max-width: 720px){
-  .brand h1{font-size:36px;}
-  .card{width:38px;height:54px;font-size:12px;}
-  .table-area{gap:14px;padding:14px;}
-  .stock-pile,.discard-pile,.discard-pile-wrap{width:60px;height:84px;}
+  .brand h1{font-size:32px;}
+  .landing-btn{padding:18px 18px;}
+  .table-stage{padding:60px 10px 76px;border-radius:28px;border-width:6px;min-height:320px;}
+  .center-piles{gap:16px;}
+  .stock-pile,.discard-pile,.discard-pile-wrap{width:62px;height:87px;}
+  .stock-pile .count-badge, .discard-pile .card-count-badge{font-size:11px;padding:1px 7px;}
+  .opp-seat{min-width:110px;padding:8px 10px;}
+  .opp-seat .opp-name{font-size:13px;}
+  .opp-seat .opp-meta{font-size:11.5px;}
+  .hand-row .card{width:58px;height:82px;}
+  .hand-row .card .idx{font-size:13px;}
+  .hand-row .card .idx .pip{font-size:11px;}
+  .hand-row .card .center-pip{font-size:26px;}
+  .action-bar{gap:8px;}
+  .action-btn{padding:12px 14px;font-size:13.5px;flex:1 1 auto;}
+}
+@media (max-width: 420px){
+  .table-stage{padding:52px 6px 68px;min-height:280px;}
+  .slot-east{right:6px;} .slot-west{left:6px;}
+  .opp-seat{min-width:92px;padding:7px 8px;}
+  .hand-row .card{width:50px;height:70px;}
+  .hand-row .card .idx{font-size:11px;}
+  .hand-row .card .idx .pip{font-size:9px;}
+  .hand-row .card .center-pip{font-size:21px;}
 }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js" defer></script>
 </head>
 <body>
 
@@ -1662,8 +1692,7 @@ function buildLobbySeats(){
   rows.forEach((row,i)=>{
     const name = row.querySelector('input').value.trim() || ('Player '+(i+1));
     if(i===0){ seats.push({id:i, name, type:'self', occupantConn:null, occupantName:null}); return; }
-    const active = row.querySelector('.toggle-pair button.active');
-    const type = (active && active.dataset.val==='network') ? 'network' : 'computer';
+    const type = seatSwitchIsOn(row) ? 'network' : 'computer';
     seats.push({id:i, name, type, occupantConn:null, occupantName:null});
   });
   return seats;
@@ -2290,10 +2319,9 @@ document.getElementById('create-room-btn').addEventListener('click', async ()=>{
   const btn = document.getElementById('create-room-btn');
   const statusEl = document.getElementById('room-status-line');
   const networkSeatIds = [];
-  document.querySelectorAll('#seats-container .toggle-pair').forEach(tp=>{
-    const seatId = Number(tp.dataset.seat);
-    const active = tp.querySelector('button.active');
-    if(active && active.dataset.val==='network') networkSeatIds.push(seatId);
+  document.querySelectorAll('#seats-container .seat-switch').forEach(sw=>{
+    const seatId = Number(sw.dataset.seat);
+    if(seatSwitchIsOn(sw)) networkSeatIds.push(seatId);
   });
   if(networkSeatIds.length===0){
     statusEl.textContent = 'Mark at least one seat as Network first.';
@@ -2385,6 +2413,31 @@ function renderSeatingDiagram(n){
   `;
 }
 
+// A compact on/off switch used for both Human/Computer (local mode) and Computer/Network (host
+// mode) seat toggles — replaces the old two-button pair, which was wide enough to get clipped
+// on narrow phone screens once a team label and a name field shared the same row.
+function seatSwitchHTML(seatId, checked, offLabel, onLabel){
+  return `<label class="seat-switch" data-seat="${seatId}" data-off="${offLabel}" data-on="${onLabel}">
+    <input type="checkbox" ${checked?'checked':''}>
+    <span class="seat-switch-track"><span class="seat-switch-thumb"></span></span>
+    <span class="seat-switch-label">${checked?onLabel:offLabel}</span>
+  </label>`;
+}
+function wireSeatSwitch(switchEl, onChange){
+  const input = switchEl.querySelector('input');
+  const label = switchEl.querySelector('.seat-switch-label');
+  input.addEventListener('change', ()=>{
+    label.textContent = input.checked ? switchEl.dataset.on : switchEl.dataset.off;
+    if(onChange) onChange(input.checked);
+  });
+}
+// Reads a seat-switch's on/off state. Accepts either the .seat-switch element itself, or a
+// container (like a seat-row) that has one somewhere inside it.
+function seatSwitchIsOn(el){
+  const input = el.matches && el.matches('.seat-switch') ? el.querySelector('input') : el.querySelector('.seat-switch input');
+  return !!(input && input.checked);
+}
+
 function buildSeatRows(n){
   const container = document.getElementById('seats-container');
   container.innerHTML='';
@@ -2404,26 +2457,21 @@ function buildSeatRows(n){
         <span style="font-size:11px;color:var(--ivory-dim);white-space:nowrap;">${teamNote}</span>
         ${isSelf
           ? '<span class="badge" style="font-size:10px;background:rgba(196,154,69,0.25);padding:4px 10px;border-radius:20px;white-space:nowrap;">You (host)</span>'
-          : `<div class="toggle-pair" data-seat="${i}"><button data-val="computer" class="active">Computer</button><button data-val="network">Network</button></div>`}
+          : seatSwitchHTML(i, false, 'Computer', 'Network')}
       `;
       container.appendChild(row);
       if(!isSelf){
         const statusEl = document.createElement('div');
         statusEl.className = 'status-line';
         statusEl.id = `net-status-${i}`;
-        statusEl.style.cssText = 'margin:-4px 0 8px 22px;';
+        statusEl.style.cssText = 'margin:-4px 0 8px 22px;flex-basis:100%;';
         statusEl.style.display = 'none';
         container.appendChild(statusEl);
-        const tp = row.querySelector('.toggle-pair');
-        tp.querySelectorAll('button').forEach(b=>{
-          b.addEventListener('click', ()=>{
-            tp.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
-            b.classList.add('active');
-            statusEl.style.display = b.dataset.val==='network' ? 'block' : 'none';
-            statusEl.textContent = b.dataset.val==='network' ? 'Waiting for a player to join with the room code…' : '';
-            statusEl.className = 'status-line';
-            updateHostStartButtonState();
-          });
+        wireSeatSwitch(row.querySelector('.seat-switch'), (isNetwork)=>{
+          statusEl.style.display = isNetwork ? 'block' : 'none';
+          statusEl.textContent = isNetwork ? 'Waiting for a player to join with the room code…' : '';
+          statusEl.className = 'status-line';
+          updateHostStartButtonState();
         });
       }
       continue;
@@ -2435,18 +2483,10 @@ function buildSeatRows(n){
       <span class="team-chip" style="background:${n===4?teamColors[i]:'#c49a45'}"></span>
       <input type="text" value="${names[i] || 'Player '+(i+1)}" data-seat="${i}"/>
       <span style="font-size:11px;color:var(--ivory-dim);white-space:nowrap;">${teamNote}</span>
-      <div class="toggle-pair" data-seat="${i}">
-        <button data-val="human" class="${isHuman?'active':''}">Human</button>
-        <button data-val="computer" class="${!isHuman?'active':''}">Computer</button>
-      </div>
+      ${seatSwitchHTML(i, isHuman, 'Computer', 'Human')}
     `;
     container.appendChild(row);
-    row.querySelector('.toggle-pair').querySelectorAll('button').forEach(b=>{
-      b.addEventListener('click', ()=>{
-        row.querySelectorAll('.toggle-pair button').forEach(x=>x.classList.remove('active'));
-        b.classList.add('active');
-      });
-    });
+    wireSeatSwitch(row.querySelector('.seat-switch'), null);
   }
   renderSeatingDiagram(n);
   if(currentMode==='host') updateHostStartButtonState();
@@ -2482,12 +2522,11 @@ function onNetStatusChange(){
 function updateHostStartButtonState(){
   const startBtn = document.getElementById('start-btn');
   if(currentMode!=='host'){ startBtn.disabled = false; return; }
-  const rows = document.querySelectorAll('#seats-container .toggle-pair');
+  const switches = document.querySelectorAll('#seats-container .seat-switch');
   let allConnected = true;
-  rows.forEach(tp=>{
-    const seatId = Number(tp.dataset.seat);
-    const active = tp.querySelector('button.active');
-    if(active && active.dataset.val==='network'){
+  switches.forEach(sw=>{
+    const seatId = Number(sw.dataset.seat);
+    if(seatSwitchIsOn(sw)){
       const conn = Net.hostConnections[seatId];
       if(!conn || conn.status!=='connected') allConnected=false;
     }
@@ -2558,11 +2597,10 @@ document.getElementById('start-btn').addEventListener('click', ()=>{
   rows.forEach((row,i)=>{
     const name = row.querySelector('input').value.trim() || ('Player '+(i+1));
     if(currentMode==='host'){
-      const toggle = row.querySelector('.toggle-pair button.active');
-      const isHuman = i===0 || (toggle && toggle.dataset.val==='network');
+      const isHuman = i===0 || seatSwitchIsOn(row);
       seatConfigs.push({name, isHuman});
     } else {
-      const isHuman = row.querySelector('.toggle-pair button.active').dataset.val === 'human';
+      const isHuman = seatSwitchIsOn(row);
       seatConfigs.push({name, isHuman});
     }
   });

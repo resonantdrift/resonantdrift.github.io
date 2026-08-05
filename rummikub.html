@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https: wss:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Rummikub — Heartside Games</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js"></script>
+<script src="peerjs.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -54,7 +55,7 @@ input[type=range]{flex:1;accent-color:var(--ochre)}
 .icon-btn{background:rgba(0,0,0,.26);border:0;color:var(--ink);width:34px;height:34px;border-radius:9px;font-size:16px;cursor:pointer;font-weight:700}
 .table-wrap{flex:1;overflow:auto;padding:2px 12px 8px;margin:0 4px;border-radius:16px;background:rgba(0,0,0,.1)}
 .table{display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;min-height:100%}
-.set{position:relative;display:flex;gap:3px;align-items:center;padding:9px 7px 7px;border-radius:13px;background:rgba(0,0,0,.16);border:2px solid transparent;min-height:82px;min-width:50px}
+.set{position:relative;display:flex;flex-wrap:wrap;gap:3px;align-items:center;padding:9px 7px 7px;border-radius:13px;background:rgba(0,0,0,.16);border:2px solid transparent;min-height:82px;min-width:50px;max-width:100%}
 .set.valid{border-color:rgba(91,191,138,.5);background:rgba(91,191,138,.07)}
 .set.invalid{border-color:rgba(216,121,79,.6);background:rgba(216,121,79,.09)}
 .set .badge{position:absolute;top:-9px;left:11px;font-family:'Archivo Narrow';font-weight:700;font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:6px}
@@ -64,7 +65,7 @@ body.holding .newset{border-color:var(--ochre);color:var(--ochre);background:rgb
 .rack-dock{flex-shrink:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.34) 22%);padding:8px 12px calc(10px + env(safe-area-inset-bottom))}
 .turn-banner{text-align:center;font-family:'Archivo Narrow';font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px;min-height:17px}
 .turn-banner.you{color:var(--ochre)}
-.rack{display:flex;gap:3px;overflow-x:auto;padding:7px;min-height:82px;border-radius:13px;background:rgba(0,0,0,.22);align-items:center}
+.rack{display:flex;flex-wrap:wrap;gap:3px;padding:7px;min-height:82px;max-height:40vh;overflow-y:auto;border-radius:13px;background:rgba(0,0,0,.22);align-items:center;align-content:center}
 .rtile{--w:46px;--h:62px;width:var(--w);height:var(--h);flex-shrink:0;position:relative;cursor:pointer;touch-action:none;background:linear-gradient(163deg,#fbf5ea,var(--bone) 42%,var(--bone-shadow));border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.6),inset 0 0 0 1px var(--bone-edge);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:26px;transition:transform .12s,box-shadow .12s}
 .rtile.lifting{opacity:.28}.rtile .num{pointer-events:none}
 .rtile.red .num{color:var(--red)}.rtile.blue .num{color:var(--blue)}.rtile.black .num{color:var(--black)}.rtile.orange .num{color:var(--orange)}
@@ -89,6 +90,7 @@ body.holding .newset{border-color:var(--ochre);color:var(--ochre);background:rgb
 .overlay h2{font-weight:900;font-size:clamp(30px,9vw,46px);color:var(--bone)}
 .overlay .sub{font-family:'Archivo Narrow';font-weight:600;font-size:15px;color:var(--ink-dim);margin-top:10px;max-width:340px;line-height:1.4}
 .overlay .av-big{width:66px;height:66px;border-radius:50%;background:var(--ochre);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:26px;color:#231a09;margin-bottom:10px}
+@media (max-width:430px){.rtile{--w:42px;--h:56px;font-size:23px}.rtile.joker svg{width:34px;height:38px}}
 </style>
 </head>
 <body>
@@ -157,6 +159,7 @@ body.holding .newset{border-color:var(--ochre);color:var(--ochre);background:rgb
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const COLORS=['red','blue','black','orange'],JTYPES=['standard','double','change','mirror'];
 let _id=0;const uid=()=>'t'+(_id++);
 const isJ=(t,k)=>!!t.joker&&(!k||t.jtype===k);
@@ -383,7 +386,7 @@ function renderOpps(){
     const n=names[s]||('P'+s);
     const cnt = counts?counts[s]:(G.racks[s]?G.racks[s].length:0);
     const el=document.createElement('div'); el.className='opp'+(turn===s?' active':'')+(melded[s]?' melded':'');
-    el.innerHTML=`<span class="av">${(n[0]||'?').toUpperCase()}</span><span class="nm">${n}</span><span class="ct">${cnt}</span><span class="meld"></span>`;
+    el.innerHTML=`<span class="av">${esc((n[0]||'?').toUpperCase())}</span><span class="nm">${esc(n)}</span><span class="ct">${cnt}</span><span class="meld"></span>`;
     box.appendChild(el);
   }
   const pool = view?view.pool:G.pool.length;
@@ -459,10 +462,10 @@ function onMove(e){if(!g||e.pointerId!==g.pid)return;
 function clearIns(){const b=document.querySelector('.ins-bar');if(b)b.remove();}
 function showIns(x,y){clearIns();const el=document.elementFromPoint(x,y);if(!el)return;
   const set=el.closest('.set'),rack=el.closest('.rack');const c=set||rack;if(!c)return;
-  const idx=nearIdx(c,x);const bar=document.createElement('div');bar.className='ins-bar';
+  const idx=nearIdx(c,x,y);const bar=document.createElement('div');bar.className='ins-bar';
   const ts=[...c.querySelectorAll('.rtile:not(.lifting)')];if(idx>=ts.length)c.appendChild(bar);else c.insertBefore(bar,ts[idx]);
   g.target={kind:set?'set':'rack',si:set?+set.dataset.set:0,idx};}
-function nearIdx(c,x){const ts=[...c.querySelectorAll('.rtile:not(.lifting)')];for(let i=0;i<ts.length;i++){const r=ts[i].getBoundingClientRect();if(x<r.left+r.width/2)return i;}return ts.length;}
+function nearIdx(c,x,y){const ts=[...c.querySelectorAll('.rtile:not(.lifting)')];if(!ts.length)return 0;let best=0,bd=Infinity;for(let i=0;i<ts.length;i++){const r=ts[i].getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;const d=Math.hypot(x-cx,y-cy);if(d<bd){bd=d;best=i;}}const r=ts[best].getBoundingClientRect();return (x<r.left+r.width/2)?best:best+1;}
 function finishDrag(x,y){clearIns();if(g.ghost)g.ghost.remove();if(g.el)g.el.classList.remove('lifting');
   const under=document.elementFromPoint(x,y);const ns=under&&under.closest('.newset');
   if(ns){heldGroup=[g.id];placeGroup('new',0,0);} else if(g.target){heldGroup=[g.id];placeGroup(g.target.kind,g.target.si,g.target.idx);}
@@ -522,13 +525,19 @@ function startLocal(){
 
 /* ---------- online ---------- */
 const PEER_PREFIX='hsd-rk-';
+/* ---- Shared TURN/ICE (extends Canasta's setup: embedded default + optional per-device override) ---- */
+const EMBEDDED_TURN_DEFAULT="eyJ1cmwiOiJ0dXJuOnN0YW5kYXJkLnJlbGF5Lm1ldGVyZWQuY2E6NDQzIiwidXNlcm5hbWUiOiJkNGJiYjY5YWFkYjU0ZWJiODgzZGRjZDciLCJjcmVkZW50aWFsIjoiZVkrNjBLSVBTRHlqVGtlOCJ9";
+function decodeEmbeddedTurnDefault(){if(!EMBEDDED_TURN_DEFAULT)return null;try{const o=JSON.parse(decodeURIComponent(escape(atob(EMBEDDED_TURN_DEFAULT))));if(o&&o.url)return o;}catch(e){}return null;}
+function getIceServers(){const servers=[{urls:'stun:stun.l.google.com:19302'}];try{let url=localStorage.getItem('hsd_turn_url'),username=localStorage.getItem('hsd_turn_username'),credential=localStorage.getItem('hsd_turn_credential');if(!url){const e=decodeEmbeddedTurnDefault();if(e){url=e.url;username=e.username;credential=e.credential;}}if(url){const entry={urls:url};if(username)entry.username=username;if(credential)entry.credential=credential;servers.push(entry);}}catch(e){}return servers;}
+function RTC_CONFIG(){return {iceServers:getIceServers()};}
+
 const randCode=()=>{const c='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=c[Math.floor(Math.random()*c.length)];return s;};
 $('hostBtn').onclick=startHost;$('joinBtn').onclick=()=>{$('joinPanel').style.display='block';$('hostPanel').style.display='none';};
 $('connectBtn').onclick=joinGuest;$('startOnlineBtn').onclick=hostStart;$('hostName').oninput=renderHostSeats;
 function startHost(){$('hostPanel').style.display='block';$('joinPanel').style.display='none';
   Net.mode='host';Net.mySeat=0;Net.hostConnections={};Net.seatNames={};
   const code=randCode();Net.roomCode=code;$('roomCode').textContent=code;$('hostStatus').textContent='Starting…';
-  Net.peer=new Peer(PEER_PREFIX+code);
+  Net.peer=new Peer(PEER_PREFIX+code,{config:RTC_CONFIG()});
   Net.peer.on('open',()=>$('hostStatus').textContent='Waiting for players. AI fills empty seats.');
   Net.peer.on('error',e=>$('hostStatus').textContent='Error: '+(e.type||e));
   Net.peer.on('connection',conn=>{const seat=nextSeat();if(seat==null){conn.on('open',()=>{conn.send(JSON.stringify({type:'full'}));setTimeout(()=>conn.close(),300);});return;}
@@ -541,7 +550,7 @@ function nextSeat(){for(const s of [1,2,3])if(!Net.hostConnections[s])return s;r
 function renderHostSeats(){const ul=$('hostSeats');if(!ul)return;ul.innerHTML=[0,1,2,3].map(s=>{
   let lab,st;if(s===0){lab=($('hostName').value||'Host')+' (you)';st='Ready';}
   else if(Net.hostConnections[s]){lab=Net.seatNames[s]||'Player';st='Connected';}else{lab='Open seat';st='AI';}
-  return `<li>${lab}<span class="st">${st}</span></li>`;}).join('');}
+  return `<li>${esc(lab)}<span class="st">${st}</span></li>`;}).join('');}
 function hostStart(){
   const names=[],humans=[]; names.push($('hostName').value||'Host'); humans.push(0);
   for(let s=1;s<=3;s++){ if(Net.hostConnections[s]){ names.push(Net.seatNames[s]||('Player '+s)); humans.push(s);} else { names.push(AI_NAMES[s]); } }
@@ -562,7 +571,7 @@ function onHostData(seat,raw){let m;try{m=JSON.parse(raw);}catch(_){return;}
 }
 function joinGuest(){const name=($('joinName').value||'Player').slice(0,12);const code=($('codeInput').value||'').toUpperCase().trim();
   if(code.length<3){$('joinStatus').textContent='Enter the room code.';return;}
-  Net.mode='guest';$('joinStatus').textContent='Connecting…';Net.peer=new Peer();
+  Net.mode='guest';$('joinStatus').textContent='Connecting…';Net.peer=new Peer(undefined,{config:RTC_CONFIG()});
   Net.peer.on('open',()=>{Net.conn=Net.peer.connect(PEER_PREFIX+code,{reliable:true});
     Net.conn.on('open',()=>{Net.conn.send(JSON.stringify({type:'hello',name}));$('joinStatus').textContent='Connected — waiting for host…';});
     Net.conn.on('data',onGuestData);Net.conn.on('close',()=>$('joinStatus').textContent='Disconnected.');});

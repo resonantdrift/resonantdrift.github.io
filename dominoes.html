@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https: wss:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Traditional Dominoes — Heartside Games</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js"></script>
+<script src="peerjs.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
@@ -300,6 +301,7 @@ body{font-family:'Archivo',system-ui,sans-serif;
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ===== ENGINE (double-six) ===== */
 const TEAM=['A','B','A','B'];
@@ -612,7 +614,7 @@ function renderBoard(view){
     board.style.transform='';
     const you=view.turnSeat===view.mySeat, who=you?'You':nameOf(view,view.turnSeat), verb=you?'open':'opens';
     const six=view.firstHand?' with the 6-6':'';
-    board.innerHTML=`<div class="board-inner" style="left:50%;top:50%;transform:translate(-50%,-50%)"><div class="opener-hint">Empty table. ${who} ${verb} the line${six}.</div></div>`;
+    board.innerHTML=`<div class="board-inner" style="left:50%;top:50%;transform:translate(-50%,-50%)"><div class="opener-hint">Empty table. ${esc(who)} ${verb} the line${six}.</div></div>`;
     boardLastPlaced=null; return;
   }
   const rects=view.layout.rects;
@@ -770,6 +772,12 @@ function startLocal(){
 
 /* ===== ONLINE ===== */
 const PEER_PREFIX='hsd-dom-';
+/* ---- Shared TURN/ICE (extends Canasta's setup: embedded default + optional per-device override) ---- */
+const EMBEDDED_TURN_DEFAULT="eyJ1cmwiOiJ0dXJuOnN0YW5kYXJkLnJlbGF5Lm1ldGVyZWQuY2E6NDQzIiwidXNlcm5hbWUiOiJkNGJiYjY5YWFkYjU0ZWJiODgzZGRjZDciLCJjcmVkZW50aWFsIjoiZVkrNjBLSVBTRHlqVGtlOCJ9";
+function decodeEmbeddedTurnDefault(){if(!EMBEDDED_TURN_DEFAULT)return null;try{const o=JSON.parse(decodeURIComponent(escape(atob(EMBEDDED_TURN_DEFAULT))));if(o&&o.url)return o;}catch(e){}return null;}
+function getIceServers(){const servers=[{urls:'stun:stun.l.google.com:19302'}];try{let url=localStorage.getItem('hsd_turn_url'),username=localStorage.getItem('hsd_turn_username'),credential=localStorage.getItem('hsd_turn_credential');if(!url){const e=decodeEmbeddedTurnDefault();if(e){url=e.url;username=e.username;credential=e.credential;}}if(url){const entry={urls:url};if(username)entry.username=username;if(credential)entry.credential=credential;servers.push(entry);}}catch(e){}return servers;}
+function RTC_CONFIG(){return {iceServers:getIceServers()};}
+
 function randCode(){const c='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
 $('hostBtn').onclick=startHost;
 $('joinBtn').onclick=()=>{$('joinPanel').style.display='block';$('hostPanel').style.display='none';};
@@ -781,7 +789,7 @@ function startHost(){
   $('hostPanel').style.display='block';$('joinPanel').style.display='none';
   Net.mode='host';Net.mySeat=0;Net.hostConnections={};Net.seatNames={};
   const code=randCode();Net.roomCode=code;$('roomCode').textContent=code;setHostStatus('Starting…');
-  Net.peer=new Peer(PEER_PREFIX+code);
+  Net.peer=new Peer(PEER_PREFIX+code,{config:RTC_CONFIG()});
   Net.peer.on('open',()=>setHostStatus('Waiting for players. AI fills empty seats.'));
   Net.peer.on('error',e=>setHostStatus('Error: '+(e.type||e.message||e)));
   Net.peer.on('connection',conn=>{
@@ -803,7 +811,7 @@ function renderHostSeats(){
     if(s===0){label=hostName()+' (host)';st='Ready';on='on';}
     else if(Net.hostConnections[s]){label=Net.seatNames[s]||'Player';st='Connected';on='on';}
     else{label='Open seat';st='AI';}
-    return `<li><span class="chip" style="background:${team}">${SEATCHAR[s]}</span>${label}<span class="st ${on}">${st}</span></li>`;
+    return `<li><span class="chip" style="background:${team}">${SEATCHAR[s]}</span>${esc(label)}<span class="st ${on}">${st}</span></li>`;
   }).join('');
 }
 function hostStartGame(){
@@ -820,7 +828,7 @@ function joinAsGuest(){
   const code=($('codeInput').value||'').toUpperCase().trim();
   if(code.length<3){setJoinStatus('Enter the room code.');return;}
   Net.mode='guest';Net.seatNames={};setJoinStatus('Connecting…');
-  Net.peer=new Peer();
+  Net.peer=new Peer(undefined,{config:RTC_CONFIG()});
   Net.peer.on('open',()=>{
     Net.conn=Net.peer.connect(PEER_PREFIX+code,{reliable:true});
     Net.conn.on('open',()=>{Net.conn.send(JSON.stringify({type:'hello',name}));setJoinStatus('Connected — waiting for host to start…');});

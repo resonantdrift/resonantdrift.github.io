@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https: wss:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Canasta — House Rules</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -384,7 +385,7 @@ body[data-cardback="mountain"] .stock-pile, body[data-cardback="mountain"] .mini
   .hand-row .card .center-pip{font-size:21px;}
 }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js" defer></script>
+<script src="peerjs.min.js" defer></script>
 </head>
 <body>
 
@@ -1636,7 +1637,7 @@ function renderSeatPicker(seats){
     else if(s.type==='computer'){ statusText = 'Computer'; }
     else if(s.taken){ statusText = s.occupantName ? `Taken — ${s.occupantName}` : 'Taken'; }
     else { statusText = 'Open — tap to sit here'; clickable = true; }
-    row.innerHTML = `<span style="flex:1;font-size:15px;">${s.name}</span><span style="color:var(--ivory-dim);font-size:13.5px;">${statusText}</span>`;
+    row.innerHTML = `<span style="flex:1;font-size:15px;">${esc(s.name)}</span><span style="color:var(--ivory-dim);font-size:13.5px;">${statusText}</span>`;
     if(clickable){
       row.style.cursor = 'pointer';
       row.addEventListener('click', ()=>{
@@ -1719,6 +1720,7 @@ function getIceServers(){
   return servers;
 }
 function RTC_CONFIG(){ return { iceServers: getIceServers() }; }
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 
 function randomRoomCode(){
@@ -1888,7 +1890,7 @@ function renderTopbar(){
   for(const t of G.teams){
     const pill = document.createElement('div');
     pill.className = 'score-pill' + (t.score===maxScore && maxScore>0 ? ' leading':'');
-    pill.innerHTML = `<div class="name">${t.name}</div><div class="val">${t.score}</div>`;
+    pill.innerHTML = `<div class="name">${esc(t.name)}</div><div class="val">${t.score}</div>`;
     wrap.appendChild(pill);
   }
 }
@@ -1914,7 +1916,7 @@ function renderOpponents(){
     const cardCount = G.hands[seat.id].length;
     let backs='';
     for(let i=0;i<Math.min(cardCount,10);i++) backs += '<span class="mini-cardback"></span>';
-    div.innerHTML = `<div class="opp-name">${seat.name} <span class="badge">${seat.isHuman?'Human':'Computer'}</span></div>
+    div.innerHTML = `<div class="opp-name">${esc(seat.name)} <span class="badge">${seat.isHuman?'Human':'Computer'}</span></div>
       <div class="opp-meta">${team.name} · ${cardCount} cards</div>
       <div class="cardback-fan">${backs}</div>`;
     const offset = (seat.id - me + G.numPlayers) % G.numPlayers;

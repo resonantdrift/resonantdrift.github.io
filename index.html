@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Heartside Games — Fun games for the family</title>
-<meta name="description" content="Heartside Games makes classic table games you can play together — solo, pass-and-play on one device, or online with friends anywhere. Now playing: Canasta and Traditional Dominoes.">
+<meta name="description" content="Heartside Games makes classic table games you can play together — solo, pass-and-play on one device, or online with friends anywhere. Now playing: Canasta, Traditional Dominoes, and Rummikub.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -17,6 +17,8 @@
   --amber-deep:#d9942f;
   --coral:#e8896a;         /* second bulb */
   --coral-deep:#cf6a4c;
+  --moon:#6cc08a;          /* third bulb — lit green */
+  --moon-deep:#3f9463;
   --cream:#f5efe3;         /* text */
   --cream-dim:#b9c0d0;
   --wire:#38445c;
@@ -47,9 +49,14 @@ body{
   background-size:340px 340px;}
 .stars::after{background-size:520px 520px;opacity:.6;animation:twinkle 6s ease-in-out infinite alternate}
 @keyframes twinkle{from{opacity:.35}to{opacity:.75}}
-.moon{position:absolute;top:8%;right:12%;width:120px;height:120px;border-radius:50%;
-  background:radial-gradient(circle at 38% 38%, #fbf3df, #efe2c4 55%, #d9c9a4);
-  box-shadow:0 0 80px 20px rgba(245,225,180,.18);opacity:.55}
+.moon{position:absolute;top:8%;right:12%;width:118px;height:118px;border-radius:50%;
+  background:
+    radial-gradient(circle at 39% 33%, rgba(150,140,118,.18), transparent 32%),
+    radial-gradient(circle at 63% 50%, rgba(140,128,104,.16), transparent 34%),
+    radial-gradient(circle at 32% 62%, rgba(150,140,118,.13), transparent 26%),
+    radial-gradient(circle at 42% 40%, #fcf5e2, #ecdfbf 60%, #ccb994 100%);
+  box-shadow:0 0 60px 14px rgba(245,225,180,.18), inset -9px -11px 22px rgba(80,70,52,.36), inset 7px 7px 16px rgba(255,250,235,.28);
+  opacity:.85}
 
 /* header */
 header{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:26px 0}
@@ -80,8 +87,11 @@ header{position:relative;z-index:3;display:flex;align-items:center;justify-conte
   box-shadow:0 0 26px 6px rgba(242,177,85,.55),0 0 60px 14px rgba(242,177,85,.22);animation:glow 4s ease-in-out infinite}
 .bulb.lit.coral .globe{background:radial-gradient(circle at 40% 32%,#ffe4d6,var(--coral) 55%,var(--coral-deep));
   box-shadow:0 0 26px 6px rgba(232,137,106,.55),0 0 60px 14px rgba(232,137,106,.22)}
+.bulb.lit.rk .globe{background:radial-gradient(circle at 40% 32%,#e6f8e8,var(--moon) 52%,var(--moon-deep));
+  box-shadow:0 0 26px 6px rgba(108,192,138,.55),0 0 60px 14px rgba(108,192,138,.22)}
 .bulb.lit .sub{color:var(--amber)}
 .bulb.lit.coral .sub{color:var(--coral)}
+.bulb.lit.rk .sub{color:var(--moon)}
 .bulb.lit:hover .globe{transform:scale(1.12)}
 .bulb.lit:focus-visible{outline:2px solid var(--amber);outline-offset:8px;border-radius:12px}
 @keyframes glow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.14)}}
@@ -96,7 +106,7 @@ header{position:relative;z-index:3;display:flex;align-items:center;justify-conte
 .section-head{text-align:center;margin-bottom:38px}
 .section-head .k{font-weight:700;letter-spacing:.28em;text-transform:uppercase;font-size:11px;color:var(--amber)}
 .section-head h2{font-family:'Fraunces';font-weight:900;font-size:clamp(28px,4.5vw,40px);margin-top:8px;color:var(--cream)}
-.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:22px}
 .card{position:relative;
   background:linear-gradient(180deg,rgba(35,48,73,.9),rgba(25,33,50,.9));
   border:1px solid rgba(245,239,227,.09);border-radius:20px;padding:30px 28px;overflow:hidden;
@@ -125,6 +135,11 @@ header{position:relative;z-index:3;display:flex;align-items:center;justify-conte
 .card.dominoes .play{background:linear-gradient(180deg,var(--coral),var(--coral-deep));box-shadow:0 4px 0 rgba(0,0,0,.28)}
 .card .play:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.28)}
 .card .play:focus-visible{outline:2px solid var(--cream);outline-offset:3px}
+.card.rummikub::before{background:linear-gradient(90deg,var(--moon),var(--moon-deep))}
+.card.rummikub .icon{background:rgba(143,180,220,.14);border:1px solid rgba(143,180,220,.3)}
+.card.rummikub .tag{color:var(--moon)}
+.card.rummikub .feat li::before{background:var(--moon)}
+.card.rummikub .play{background:linear-gradient(180deg,var(--moon),var(--moon-deep));box-shadow:0 4px 0 rgba(0,0,0,.28)}
 
 /* why */
 .why{position:relative;z-index:2;padding:56px 0 40px;max-width:760px;margin:0 auto;text-align:center}
@@ -178,10 +193,10 @@ footer a:hover{color:var(--amber)}
         <span class="cord"></span><span class="globe"></span>
         <span class="name">Dominoes</span><span class="sub">Play</span>
       </a>
-      <div class="bulb dim" aria-hidden="true">
+      <a class="bulb lit rk" href="rummikub.html">
         <span class="cord"></span><span class="globe"></span>
-        <span class="name">&nbsp;</span><span class="sub">Coming soon</span>
-      </div>
+        <span class="name">Rummikub</span><span class="sub">Play</span>
+      </a>
       <div class="bulb dim" aria-hidden="true">
         <span class="cord"></span><span class="globe"></span>
         <span class="name">&nbsp;</span><span class="sub">Coming soon</span>
@@ -192,7 +207,7 @@ footer a:hover{color:var(--amber)}
   <section class="games" id="games">
     <div class="section-head">
       <div class="k">Now playing</div>
-      <h2 class="display">Two ways to gather 'round</h2>
+      <h2 class="display">Three ways to gather 'round</h2>
     </div>
     <div class="card-grid">
 
@@ -220,6 +235,19 @@ footer a:hover{color:var(--amber)}
           <li>Bones clack on wood; the winning tile slams the table</li>
         </ul>
         <a class="play" href="dominoes.html">Play Dominoes →</a>
+      </article>
+
+      <article class="card rummikub">
+        <div class="icon"><svg width="26" height="26" viewBox="0 0 26 26" fill="none"><rect x="4" y="4" width="8.6" height="18" rx="2" fill="#f5efe3" stroke="#3f9463" stroke-width="1.1"/><rect x="13.4" y="4" width="8.6" height="18" rx="2" fill="#f5efe3" stroke="#3f9463" stroke-width="1.1"/><text x="8.3" y="16.4" font-family="Manrope,sans-serif" font-weight="800" font-size="10" fill="#cf3a3a" text-anchor="middle">7</text><text x="17.7" y="16.4" font-family="Manrope,sans-serif" font-weight="800" font-size="10" fill="#3f9463" text-anchor="middle">7</text></svg></div>
+        <h3 class="display">Rummikub</h3>
+        <div class="tag">Runs, groups &amp; moon jokers</div>
+        <p>Race to empty your rack by laying runs and groups — and rearranging the whole table on your turn to make your tiles fit. Our version adds four moon jokers you won't find in the box: standard, double, change-colour, and mirror.</p>
+        <ul class="feat">
+          <li>Solo vs. AI with an adjustable strength dial</li>
+          <li>Pass-and-play, or host a table online with friends</li>
+          <li>Four special moon jokers with their own rules</li>
+        </ul>
+        <a class="play" href="rummikub.html">Play Rummikub →</a>
       </article>
 
     </div>

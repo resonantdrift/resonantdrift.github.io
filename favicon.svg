@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Heartside Games">
+  <defs>
+    <radialGradient id="fe" cx="50%" cy="40%" r="62%">
+      <stop offset="0%" stop-color="#ffe0a6"/><stop offset="45%" stop-color="#f2b155"/><stop offset="100%" stop-color="#e8896a"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="#1b2436"/>
+  <g transform="translate(9,9) scale(0.46)">
+    <path d="M50 87.5 C50 87.5 12.5 56 12.5 35 C12.5 23 23 12.5 35.4 12.5 C43.75 12.5 50 18.75 50 25 C50 18.75 56.25 12.5 64.6 12.5 C77 12.5 87.5 23 87.5 35 C87.5 56 50 87.5 50 87.5 Z" fill="url(#fe)"/>
+  </g>
+</svg>

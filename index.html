@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Heartside Games — Fun games for the family</title>
-<meta name="description" content="Heartside Games makes classic table games you can play together — solo, pass-and-play on one device, or online with friends anywhere. Now playing: Canasta, Traditional Dominoes, and Rummikub.">
+<meta name="description" content="Heartside Games makes classic table games you can play together — solo, pass-and-play on one device, or online with friends anywhere. Now playing: Canasta, Dominoes, Rummikub, and Blokus.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -20,6 +21,8 @@
   --coral-deep:#cf6a4c;
   --moon:#6cc08a;          /* third bulb — lit green */
   --moon-deep:#3f9463;
+  --bk:#9b7fd4;            /* fourth bulb — lit violet */
+  --bk-deep:#6f52ab;
   --cream:#f5efe3;         /* text */
   --cream-dim:#b9c0d0;
   --wire:#38445c;
@@ -93,6 +96,9 @@ header{position:relative;z-index:3;display:flex;align-items:center;justify-conte
 .bulb.lit .sub{color:var(--amber)}
 .bulb.lit.coral .sub{color:var(--coral)}
 .bulb.lit.rk .sub{color:var(--moon)}
+.bulb.lit.bk .globe{background:radial-gradient(circle at 40% 32%,#ece4fb,var(--bk) 52%,var(--bk-deep));
+  box-shadow:0 0 26px 6px rgba(155,127,212,.55),0 0 60px 14px rgba(155,127,212,.22)}
+.bulb.lit.bk .sub{color:var(--bk)}
 .bulb.lit:hover .globe{transform:scale(1.12)}
 .bulb.lit:focus-visible{outline:2px solid var(--amber);outline-offset:8px;border-radius:12px}
 @keyframes glow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.14)}}
@@ -107,7 +113,7 @@ header{position:relative;z-index:3;display:flex;align-items:center;justify-conte
 .section-head{text-align:center;margin-bottom:38px}
 .section-head .k{font-weight:700;letter-spacing:.28em;text-transform:uppercase;font-size:11px;color:var(--amber)}
 .section-head h2{font-family:'Fraunces';font-weight:900;font-size:clamp(28px,4.5vw,40px);margin-top:8px;color:var(--cream)}
-.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:22px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:20px}
 .card{position:relative;
   background:linear-gradient(180deg,rgba(35,48,73,.9),rgba(25,33,50,.9));
   border:1px solid rgba(245,239,227,.09);border-radius:20px;padding:30px 28px;overflow:hidden;
@@ -141,6 +147,11 @@ header{position:relative;z-index:3;display:flex;align-items:center;justify-conte
 .card.rummikub .tag{color:var(--moon)}
 .card.rummikub .feat li::before{background:var(--moon)}
 .card.rummikub .play{background:linear-gradient(180deg,var(--moon),var(--moon-deep));box-shadow:0 4px 0 rgba(0,0,0,.28)}
+.card.blokus::before{background:linear-gradient(90deg,var(--bk),var(--bk-deep))}
+.card.blokus .icon{background:rgba(155,127,212,.14);border:1px solid rgba(155,127,212,.3)}
+.card.blokus .tag{color:var(--bk)}
+.card.blokus .feat li::before{background:var(--bk)}
+.card.blokus .play{background:linear-gradient(180deg,var(--bk),var(--bk-deep));box-shadow:0 4px 0 rgba(0,0,0,.28)}
 
 /* why */
 .why{position:relative;z-index:2;padding:56px 0 40px;max-width:760px;margin:0 auto;text-align:center}
@@ -198,17 +209,17 @@ footer a:hover{color:var(--amber)}
         <span class="cord"></span><span class="globe"></span>
         <span class="name">Rummikub</span><span class="sub">Play</span>
       </a>
-      <div class="bulb dim" aria-hidden="true">
+      <a class="bulb lit bk" href="blokus.html">
         <span class="cord"></span><span class="globe"></span>
-        <span class="name">&nbsp;</span><span class="sub">Coming soon</span>
-      </div>
+        <span class="name">Blokus</span><span class="sub">Play</span>
+      </a>
     </nav>
   </section>
 
   <section class="games" id="games">
     <div class="section-head">
       <div class="k">Now playing</div>
-      <h2 class="display">Three ways to gather 'round</h2>
+      <h2 class="display">Four ways to gather 'round</h2>
     </div>
     <div class="card-grid">
 
@@ -249,6 +260,19 @@ footer a:hover{color:var(--amber)}
           <li>Four special moon jokers with their own rules</li>
         </ul>
         <a class="play" href="rummikub.html">Play Rummikub →</a>
+      </article>
+
+      <article class="card blokus">
+        <div class="icon"><svg width="26" height="26" viewBox="0 0 26 26" fill="none"><rect x="3" y="3" width="9" height="9" rx="1.6" fill="#2f74b5"/><rect x="14" y="3" width="9" height="9" rx="1.6" fill="#e0a53d"/><rect x="3" y="14" width="9" height="9" rx="1.6" fill="#bf3b30"/><rect x="14" y="14" width="9" height="9" rx="1.6" fill="#5bbf8a"/></svg></div>
+        <h3 class="display">Blokus</h3>
+        <div class="tag">Corners, colours &amp; clever fits</div>
+        <p>Claim the most squares with your 21 shapes. Every piece you add must touch your own colour corner-to-corner — and never edge-to-edge. Rotate, flip, and wedge them into the gaps before you run out of room.</p>
+        <ul class="feat">
+          <li>2-player Duo board, or up to 4 players</li>
+          <li>Solo vs. AI with an adjustable strength dial</li>
+          <li>Pass-and-play, or host a table online with friends</li>
+        </ul>
+        <a class="play" href="blokus.html">Play Blokus →</a>
       </article>
 
     </div>

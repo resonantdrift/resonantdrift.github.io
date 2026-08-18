@@ -159,6 +159,7 @@ body{font-family:'Archivo',system-ui,sans-serif;
 .switch.on{background:var(--ochre)}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--bone);transition:.16s}
 .switch.on::after{left:23px}
+.name-field{border:2px solid #e0a53d!important;background:rgba(224,165,61,.10)!important}
 </style>
 </head>
 <body>
@@ -201,7 +202,7 @@ body{font-family:'Archivo',system-ui,sans-serif;
           <button class="subbtn ghost" id="joinBtn" style="flex:1">Join a table</button>
         </div>
         <div id="hostPanel" style="display:none">
-          <div class="row"><input id="hostNameInput" placeholder="Your name" maxlength="12" value="Host"></div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#d8cba8;margin:4px 0 4px">✎ Your name — tap to change</div><div class="row"><input id="hostNameInput" class="name-field" placeholder="Your name" maxlength="12" value="Host"></div>
           <div class="hint">Share this code. Friends pick “Join a table” and enter it. Empty seats fill with AI.</div>
           <div class="code-box" id="roomCode">·····</div>
           <ul class="seat-list" id="hostSeats"></ul>
@@ -209,7 +210,7 @@ body{font-family:'Archivo',system-ui,sans-serif;
           <div class="status-line" id="hostStatus"></div>
         </div>
         <div id="joinPanel" style="display:none">
-          <div class="row"><input id="nameInput" placeholder="Your name" maxlength="12"></div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#d8cba8;margin:4px 0 4px">✎ Your name — tap to change</div><div class="row"><input id="nameInput" class="name-field" placeholder="Your name" maxlength="12"></div>
           <div class="row"><input id="codeInput" placeholder="Room code" maxlength="8" style="text-transform:uppercase"></div>
           <button class="play-btn" id="connectBtn">Connect</button>
           <div class="status-line" id="joinStatus"></div>

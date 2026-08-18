@@ -74,6 +74,10 @@ body.holding .newset{border-color:var(--ochre);color:var(--ochre);background:rgb
 .rtile.held{transform:translateY(-9px);box-shadow:0 10px 18px rgba(0,0,0,.5),inset 0 0 0 1px var(--bone-edge),0 0 0 3px var(--ochre);z-index:3}
 .rtile .ord{position:absolute;top:-8px;right:-6px;width:16px;height:16px;border-radius:50%;background:var(--ochre);color:#231a09;font-family:'Archivo';font-weight:900;font-size:10px;display:flex;align-items:center;justify-content:center}
 .rtile.back{background:linear-gradient(135deg,#20604c,#123f30)}
+@keyframes rkDrawnBlink{0%,100%{box-shadow:0 2px 4px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.6),inset 0 0 0 1px var(--bone-edge)}20%,60%{box-shadow:0 0 0 3px #e8563a,0 0 15px 4px rgba(232,86,58,.8)}40%,80%{box-shadow:0 0 0 3px rgba(232,86,58,.25)}}
+.rtile.drawn-blink{animation:rkDrawnBlink 1.2s ease-in-out;z-index:5}
+.rtile.drawn-rim{box-shadow:0 0 0 3px #e8563a,0 0 12px 3px rgba(232,86,58,.55)!important;z-index:5}
+.name-field{border:2px solid var(--ochre)!important;background:rgba(224,165,61,.10)!important}
 .rtile.ghost{position:fixed;z-index:200;pointer-events:none;opacity:.96;box-shadow:0 12px 24px rgba(0,0,0,.5);transform:rotate(-3deg) scale(1.04)}
 .slot{width:9px;align-self:stretch;min-height:58px;border-radius:5px;background:rgba(224,165,61,.22);cursor:pointer;flex-shrink:0}
 .slot:hover,.slot:active{background:var(--ochre)}
@@ -110,13 +114,13 @@ body.holding .newset{border-color:var(--ochre);color:var(--ochre);background:rgb
       <div class="opt" id="aiOpt"><div class="opt-label">Computer strength</div>
         <div class="slider-row"><input type="range" id="aiSlider" min="1" max="5" value="3"><span class="slider-val" id="aiVal">Balanced</span></div></div>
       <div class="lobby" id="lobby">
-        <div class="row"><input type="text" id="hostName" placeholder="Your name" maxlength="12" value="Host"></div>
+        <div class="opt-label" style="margin:4px 0 4px">✎ Your name — tap to change</div><div class="row"><input type="text" id="hostName" class="name-field" placeholder="Your name" maxlength="12" value="Host"></div>
         <div class="row"><button class="subbtn" id="hostBtn" style="flex:1">Host a table</button><button class="subbtn ghost" id="joinBtn" style="flex:1">Join a table</button></div>
         <div id="hostPanel" style="display:none">
           <div class="code-box" id="roomCode">·····</div><ul class="seat-list" id="hostSeats"></ul>
           <button class="play-btn" id="startOnlineBtn">Start game</button><div class="status-line" id="hostStatus"></div></div>
         <div id="joinPanel" style="display:none">
-          <div class="row"><input type="text" id="joinName" placeholder="Your name" maxlength="12"></div>
+          <div class="opt-label" style="margin:2px 0 4px">✎ Your name — tap to change</div><div class="row"><input type="text" id="joinName" class="name-field" placeholder="Your name" maxlength="12"></div>
           <div class="row"><input type="text" id="codeInput" placeholder="Room code" maxlength="8" style="text-transform:uppercase"></div>
           <button class="play-btn" id="connectBtn">Connect</button><div class="status-line" id="joinStatus"></div></div>
       </div>
@@ -329,9 +333,9 @@ function resetMove(){
   G.board=clone(G.snapshot.board); G.racks[G.turn]=clone(G.snapshot.rack); heldGroup=[]; renderAll(); refresh(); setStatus('Move reset.',''); }
 function drawTile(){
   const s=G.turn;
-  if(Net.mode==='guest'){ Net.conn&&Net.conn.open&&Net.conn.send(JSON.stringify({type:'draw'})); return; }
+  if(Net.mode==='guest'){ Net.pendingDraw=new Set(((Net.guestView&&Net.guestView.myRack)||[]).map(t=>t.id)); Net.conn&&Net.conn.open&&Net.conn.send(JSON.stringify({type:'draw'})); return; }
   resetMove();
-  if(G.pool.length) G.racks[s].push(G.pool.pop());
+  if(G.pool.length){const _d=G.pool.pop();G.racks[s].push(_d);markDrawn(_d.id);}
   afterTurnAdvance(false);
 }
 function clearHeld(){ heldGroup=[]; renderAll(); refreshUI(); }
@@ -360,7 +364,7 @@ function jokerSVG(jt){const B='#2f74b5',N='#f4ecdd';
 function tileEl(t){const el=document.createElement('div');el.className='rtile '+(t.joker?'joker':t.color);el.dataset.id=t.id;
   el.innerHTML=t.joker?jokerSVG(t.jtype):`<span class="num">${t.num}</span>`;
   const gi=heldGroup.indexOf(t.id);if(gi>=0){el.classList.add('held');el.insertAdjacentHTML('beforeend',`<span class="ord">${gi+1}</span>`);}
-  el.addEventListener('pointerdown',e=>onTileDown(e,t));return el;}
+  if(justDrawn&&t.id===justDrawn.id){if(justDrawn.phase==='rim')el.classList.add('drawn-rim');else{el.classList.add('drawn-blink');if(!justDrawn.started){justDrawn.started=true;setTimeout(()=>{if(justDrawn){justDrawn.phase='rim';try{renderAll();}catch(e){}}},1250);}}}el.addEventListener('pointerdown',e=>onTileDown(e,t));return el;}
 function slotEl(kind,si,idx){const s=document.createElement('div');s.className='slot';
   s.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();placeGroup(kind,si,idx);});return s;}
 
@@ -373,6 +377,8 @@ function myTurn(){ if(Net.mode==='guest')return Net.guestView&&Net.guestView.tur
 function canEdit(){ if(Net.mode==='guest'){const V=Net.guestView;return !!(V&&V.turn===V.mySeat&&V.phase==='playing');} return !!(G&&G.phase==='playing'&&myTurn()); }
 function refreshUI(){ if(Net.mode==='guest') refreshGuest(); else refresh(); }
 
+let justDrawn=null,justDrawnTimer=null;
+function markDrawn(id){justDrawn={id,phase:'blink',started:false};clearTimeout(justDrawnTimer);justDrawnTimer=setTimeout(()=>{justDrawn=null;try{renderAll();}catch(e){}},4600);}
 function renderAll(){ renderOpps(); renderBoard(); renderRack(); }
 function renderOpps(){
   const box=$('opps'); box.innerHTML='';
@@ -580,7 +586,7 @@ function joinGuest(){const name=($('joinName').value||'Player').slice(0,12);cons
 function onGuestData(raw){let m;try{m=JSON.parse(raw);}catch(_){return;}
   if(m.type==='assign'){Net.mySeat=m.seat;$('joinStatus').textContent='Connected — seat '+m.seat+'. Waiting…';return;}
   if(m.type==='start'){showGame();}
-  if(m.type==='view'){Net.guestView=m.view;Net.guestBase=clone(m.view);Net.mySeat=m.view.mySeat;if($('game').style.display==='none')showGame();
+  if(m.type==='view'){Net.guestView=m.view;Net.guestBase=clone(m.view);Net.mySeat=m.view.mySeat;if(Net.pendingDraw){const _now=new Set(((m.view.myRack)||[]).map(t=>t.id));const _add=[...(_now)].filter(id=>!Net.pendingDraw.has(id));Net.pendingDraw=null;if(_add.length===1)markDrawn(_add[0]);}if($('game').style.display==='none')showGame();
     heldGroup=[];renderAll();refreshGuest();if(m.view.phase==='over')showWin(m.view.pool===0);}
 }
 

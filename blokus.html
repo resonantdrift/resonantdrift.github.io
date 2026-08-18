@@ -80,6 +80,7 @@ input[type=range]{flex:1;accent-color:var(--ochre)}.slider-val{font-family:'Arch
 .res li{display:flex;align-items:center;gap:9px;font-family:'Archivo Narrow';font-weight:700;font-size:15px;padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.08)}
 .res .sw{width:15px;height:15px;border-radius:4px}.res .sc{margin-left:auto;font-family:'Archivo';font-weight:900;color:var(--ochre)}
 .sub{font-family:'Archivo Narrow';font-weight:600;font-size:14px;color:var(--ink-dim);margin-top:8px}
+.name-field{border:2px solid #e0a53d!important;background:rgba(224,165,61,.10)!important}
 </style>
 </head>
 <body>
@@ -91,10 +92,10 @@ input[type=range]{flex:1;accent-color:var(--ochre)}.slider-val{font-family:'Arch
     <div class="opt" id="playersOpt"><div class="opt-label">Players</div><div class="seg" id="playersSeg"><button data-p="2">2 · duo</button><button data-p="4" class="on">4</button></div></div>
     <div class="opt" id="aiOpt"><div class="opt-label">Computer strength</div><div class="slider-row"><input type="range" id="aiSlider" min="1" max="5" value="3"><span class="slider-val" id="aiVal">Balanced</span></div></div>
     <div class="lobby" id="lobby">
-      <div class="row"><input type="text" id="hostName" placeholder="Your name" maxlength="12" value="Host"></div>
+      <div class="opt-label" style="margin:4px 0 4px">✎ Your name — tap to change</div><div class="row"><input type="text" id="hostName" class="name-field" placeholder="Your name" maxlength="12" value="Host"></div>
       <div class="row"><button class="subbtn" id="hostBtn" style="flex:1">Host a table</button><button class="subbtn ghost" id="joinBtn" style="flex:1">Join a table</button></div>
       <div id="hostPanel" style="display:none"><div class="code-box" id="roomCode">·····</div><ul class="seat-list" id="hostSeats"></ul><button class="play-btn" id="startOnlineBtn">Start game</button><div class="status-line" id="hostStatus"></div></div>
-      <div id="joinPanel" style="display:none"><div class="row"><input type="text" id="joinName" placeholder="Your name" maxlength="12"></div><div class="row"><input type="text" id="codeInput" placeholder="Room code" maxlength="8" style="text-transform:uppercase"></div><button class="play-btn" id="connectBtn">Connect</button><div class="status-line" id="joinStatus"></div></div>
+      <div id="joinPanel" style="display:none"><div class="opt-label" style="margin:4px 0 4px">✎ Your name — tap to change</div><div class="row"><input type="text" id="joinName" class="name-field" placeholder="Your name" maxlength="12"></div><div class="row"><input type="text" id="codeInput" placeholder="Room code" maxlength="8" style="text-transform:uppercase"></div><button class="play-btn" id="connectBtn">Connect</button><div class="status-line" id="joinStatus"></div></div>
     </div>
     <button class="play-btn" id="startBtn">Start game</button>
     <div class="foot" onclick="showRules()">How to play</div>

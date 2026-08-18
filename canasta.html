@@ -325,6 +325,10 @@ body[data-cardback="mountain"] .stock-pile, body[data-cardback="mountain"] .mini
 .hand-row .card .center-pip{font-size:34px;}
 .hand-row .card:hover{transform:translateY(-6px);}
 .hand-row .card.selected{transform:translateY(-14px);box-shadow:0 0 0 2px var(--brass),0 8px 14px rgba(0,0,0,0.45);}
+@keyframes cnDrawnBlink{0%,100%{box-shadow:0 2px 6px rgba(0,0,0,.4)}20%,60%{box-shadow:0 0 0 3px #e8563a,0 0 15px 4px rgba(232,86,58,.8)}40%,80%{box-shadow:0 0 0 3px rgba(232,86,58,.25)}}
+.hand-row .card.drawn-blink{animation:cnDrawnBlink 1.2s ease-in-out;z-index:6}
+.hand-row .card.drawn-rim{box-shadow:0 0 0 3px #e8563a,0 0 12px 3px rgba(232,86,58,.55)!important;z-index:6}
+.name-field{border:2px solid var(--brass)!important;background:rgba(196,154,69,.12)!important;}
 
 .action-bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
 .action-btn{
@@ -542,8 +546,8 @@ body[data-cardback="mountain"] .stock-pile, body[data-cardback="mountain"] .mini
     <div class="setup-card" id="join-step1-card">
       <h2>Join an online game</h2>
       <p class="hint">Enter the room code your host sent you. Once you're connected, you'll pick your seat.</p>
-      <label style="font-size:12px;color:var(--ivory-dim);display:block;margin-bottom:4px;">Your name</label>
-      <input type="text" id="join-name-input" value="Guest" style="width:100%;margin-bottom:14px;padding:9px;border-radius:6px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);color:var(--ivory);font-size:14px;">
+      <label style="font-size:13px;color:var(--ivory);display:block;margin-bottom:4px;font-weight:600;">✎ Your name — tap to change</label>
+      <input type="text" id="join-name-input" class="name-field" value="Guest" style="width:100%;margin-bottom:14px;padding:9px;border-radius:6px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);color:var(--ivory);font-size:14px;">
       <label style="font-size:12px;color:var(--ivory-dim);display:block;margin-bottom:4px;">Room code</label>
       <input type="text" id="join-room-input" placeholder="cnst-XXXXX" style="width:100%;padding:9px;border-radius:6px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);color:var(--ivory);font-size:15px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">
       <button class="action-btn primary" id="join-generate-btn" style="margin-top:12px;width:100%;">Connect</button>
@@ -2037,11 +2041,16 @@ function addSelectedToMeld(rank){
     `Staged onto the ${rank} meld. Commit it by discarding to end your turn, or return it to hand.`);
 }
 
+let _prevHandIds=null,cDrawn=null,cDrawnTimer=null;
+function markCDrawn(id){cDrawn={id,phase:'blink',started:false};clearTimeout(cDrawnTimer);cDrawnTimer=setTimeout(()=>{cDrawn=null;try{renderHand();}catch(e){}},4600);}
 function renderHand(){
   const me = mySeatId();
   document.getElementById('whoami').textContent = `${G.seats[me].name}'s hand (${G.hands[me].length} cards)${isMyTurn()?' — your turn':''}`;
   const row = document.getElementById('hand-row');
   row.innerHTML='';
+  const _ids=G.hands[me].map(c=>c.id);
+  if(_prevHandIds){const _add=_ids.filter(id=>!_prevHandIds.includes(id));if(_add.length===1)markCDrawn(_add[0]);}
+  _prevHandIds=_ids.slice();
   const hand = G.hands[me].slice().sort((a,b)=>{
     const order = RANKS.concat(['JOKER']);
     return order.indexOf(a.rank)-order.indexOf(b.rank);
@@ -2055,6 +2064,7 @@ function renderHand(){
       else G.selectedCardIds.push(c.id);
       renderHand(); renderActionBar(); renderTeamPanels();
     }});
+    if(cDrawn && c.id===cDrawn.id){if(cDrawn.phase==='rim')el.classList.add('drawn-rim');else{el.classList.add('drawn-blink');if(!cDrawn.started){cDrawn.started=true;setTimeout(()=>{if(cDrawn){cDrawn.phase='rim';try{renderHand();}catch(e){}}},1250);}}}
     row.appendChild(el);
   }
 }
@@ -2501,7 +2511,7 @@ function buildSeatRows(n){
       const isSelf = i===0;
       row.innerHTML = `
         <span class="team-chip" style="background:${n===4?teamColors[i]:'#c49a45'}"></span>
-        <input type="text" value="${isSelf ? (names[i]||'You') : (names[i]||'Player '+(i+1))}" data-seat="${i}"/>
+        <input type="text" class="name-field" value="${isSelf ? (names[i]||'You') : (names[i]||'Player '+(i+1))}" data-seat="${i}"/>
         <span style="font-size:11px;color:var(--ivory-dim);white-space:nowrap;">${teamNote}</span>
         ${isSelf
           ? '<span class="badge" style="font-size:10px;background:rgba(196,154,69,0.25);padding:4px 10px;border-radius:20px;white-space:nowrap;">You (host)</span>'

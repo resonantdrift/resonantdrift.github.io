@@ -743,8 +743,8 @@ function initialMeldThreshold(teamScore){
   return 50;
 }
 function canTakePile(hand, topRank, freeze, teamHasMeldOfRank){
-  const naturals = hand.filter(c=>!isWild(c) && c.rank===topRank);
-  if(freeze==='wild') return naturals.length>=2; // hard freeze: must use hand only, no table-meld assist
+  const naturals = hand.filter(c=>!isWild(c) && String(c.rank)===String(topRank));
+  if(freeze==='wild' || freeze==='red3') return naturals.length>=2; // frozen: two naturals from hand only, no table-meld assist
   if(naturals.length>=2) return true; // forms a brand-new 3-card meld with the pile's top card
   if(teamHasMeldOfRank) return true; // already-established meld -- the pile's top card alone can extend it
   return false;
@@ -1963,7 +1963,12 @@ function renderPiles(){
     const team = G.teams.find(t=>t.id===G.seats[mySeatId()].teamId);
     const eligible = !topCardBlocksTake(top) && canTakePile(G.hands[mySeatId()], top.rank, G.freeze, teamHasMeldOfRank(team, top.rank));
     takeBtn.disabled = !eligible;
-    takeBtn.title = eligible ? '' : (topCardBlocksTake(top) ? 'Top card must be buried under a natural discard first.' : 'You need a natural pair of this rank in hand.');
+    if(eligible){ takeBtn.title=''; }
+    else if(topCardBlocksTake(top)){ takeBtn.title='Can\u2019t take yet \u2014 the top card is wild or a red 3. Wait until a natural card is discarded on top.'; }
+    else { const _nat=G.hands[mySeatId()].filter(c=>!isWild(c)&&String(c.rank)===String(top.rank)).length;
+      takeBtn.title=(G.freeze==='wild'||G.freeze==='red3')
+        ? `Frozen pile \u2014 needs two matching ${top.rank}s in your hand (you have ${_nat}).`
+        : `Need two ${top.rank}s in hand, or your team already melding ${top.rank}s (you have ${_nat} in hand).`; }
     takeBtn.onclick = ()=>{
       dispatchAction({type:'takePile'});
     };

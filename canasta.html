@@ -134,6 +134,7 @@ input[type=range]{width:100%;accent-color:var(--brass);}
   box-shadow:0 6px 18px rgba(196,154,69,0.25);
 }
 .start-btn:hover{filter:brightness(1.05);}
+.start-btn:disabled{opacity:0.5;filter:grayscale(0.45);box-shadow:none;cursor:not-allowed;}
 
 .rules-toggle{
   text-align:center;margin-top:18px;color:var(--ivory-dim);font-size:12.5px;text-decoration:underline;cursor:pointer;
@@ -262,6 +263,7 @@ body[data-cardback="mountain"] .stock-pile, body[data-cardback="mountain"] .mini
 }
 .take-pile-btn:hover{background:rgba(127,174,114,0.28);}
 .take-pile-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.take-pile-btn.muted{opacity:0.5;}
 
 .card{
   width:64px;height:90px;border-radius:8px;background:var(--ivory);color:var(--ink);
@@ -540,6 +542,7 @@ body[data-cardback="mountain"] .stock-pile, body[data-cardback="mountain"] .mini
   </div>
 
   <button class="start-btn" id="start-btn">Deal the cards</button>
+  <div id="start-hint" class="status-line" style="text-align:center;margin-top:10px;display:none;"></div>
   </div>
 
   <div id="join-config" style="display:none;">
@@ -549,7 +552,7 @@ body[data-cardback="mountain"] .stock-pile, body[data-cardback="mountain"] .mini
       <label style="font-size:13px;color:var(--ivory);display:block;margin-bottom:4px;font-weight:600;">✎ Your name — tap to change</label>
       <input type="text" id="join-name-input" class="name-field" value="Guest" style="width:100%;margin-bottom:14px;padding:9px;border-radius:6px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);color:var(--ivory);font-size:14px;">
       <label style="font-size:12px;color:var(--ivory-dim);display:block;margin-bottom:4px;">Room code</label>
-      <input type="text" id="join-room-input" placeholder="cnst-XXXXX" style="width:100%;padding:9px;border-radius:6px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);color:var(--ivory);font-size:15px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">
+      <input type="text" id="join-room-input" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="cnst-XXXXX" style="width:100%;padding:9px;border-radius:6px;border:1px solid var(--felt-line);background:rgba(0,0,0,0.2);color:var(--ivory);font-size:15px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">
       <button class="action-btn primary" id="join-generate-btn" style="margin-top:12px;width:100%;">Connect</button>
       <div class="status-line" id="join-status-line"></div>
     </div>
@@ -744,16 +747,16 @@ function initialMeldThreshold(teamScore){
 }
 function canTakePile(hand, topRank, freeze, teamHasMeldOfRank){
   const naturals = hand.filter(c=>!isWild(c) && String(c.rank)===String(topRank));
-  if(freeze==='wild' || freeze==='red3') return naturals.length>=2; // frozen: two naturals from hand only, no table-meld assist
+  if(freeze==='wild') return naturals.length>=2; // only a WILD permanently freezes (hand-only); a red 3 just blocks the next player via the card on top, so it never reaches here on a natural top
   if(naturals.length>=2) return true; // forms a brand-new 3-card meld with the pile's top card
   if(teamHasMeldOfRank) return true; // already-established meld -- the pile's top card alone can extend it
   return false;
 }
 function topCardBlocksTake(topCard){ return isWild(topCard) || isRed3(topCard); }
 function freezeAfterDiscard(currentFreeze, discardedCard){
-  if(isWild(discardedCard)) return 'wild';
-  if(isRed3(discardedCard)) return currentFreeze==='wild' ? 'wild' : 'red3';
-  return currentFreeze;
+  if(isWild(discardedCard)) return 'wild';                                   // a wild freezes permanently, until the pile is taken
+  if(isRed3(discardedCard)) return currentFreeze==='wild' ? 'wild' : 'red3'; // a red 3 freezes only the very next player's action
+  return currentFreeze==='wild' ? 'wild' : 'none';                           // a natural discard clears a temporary red-3 freeze (only a wild persists)
 }
 function scoreTeamHand(team, playersHandsAtEnd){
   let score=0, canastaCount=0;
@@ -1734,6 +1737,7 @@ function randomRoomCode(){
   for(let i=0;i<5;i++) code += alphabet[Math.floor(Math.random()*alphabet.length)];
   return 'cnst-' + code;
 }
+function normalizeRoomCode(s){ s=(s||'').trim().replace(/\s+/g,''); s=s.replace(/^cnst-?/i,''); return 'cnst-'+s.toUpperCase(); }
 
 // HOST: create the room. Resolves with the room code once the signaling
 // broker confirms it's reachable; from then on, any guest who connects gets
@@ -1851,7 +1855,7 @@ function guestJoinRoom(roomCode, name){
       if(!settled){ settled = true; reject(new Error('Could not reach that room — check the code and that your host has created it.')); }
     }, 15000);
     peer.on('open', ()=>{
-      const conn = peer.connect(roomCode.trim(), { reliable: true });
+      const conn = peer.connect(normalizeRoomCode(roomCode), { reliable: true });
       Net.transport = conn;
       conn.on('open', ()=>{
         if(settled) return;
@@ -1962,15 +1966,16 @@ function renderPiles(){
   if(canShow){
     const team = G.teams.find(t=>t.id===G.seats[mySeatId()].teamId);
     const eligible = !topCardBlocksTake(top) && canTakePile(G.hands[mySeatId()], top.rank, G.freeze, teamHasMeldOfRank(team, top.rank));
-    takeBtn.disabled = !eligible;
+    takeBtn.disabled = false; takeBtn.classList.toggle('muted', !eligible);
     if(eligible){ takeBtn.title=''; }
     else if(topCardBlocksTake(top)){ takeBtn.title='Can\u2019t take yet \u2014 the top card is wild or a red 3. Wait until a natural card is discarded on top.'; }
     else { const _nat=G.hands[mySeatId()].filter(c=>!isWild(c)&&String(c.rank)===String(top.rank)).length;
-      takeBtn.title=(G.freeze==='wild'||G.freeze==='red3')
+      takeBtn.title=(G.freeze==='wild')
         ? `Frozen pile \u2014 needs two matching ${top.rank}s in your hand (you have ${_nat}).`
         : `Need two ${top.rank}s in hand, or your team already melding ${top.rank}s (you have ${_nat} in hand).`; }
     takeBtn.onclick = ()=>{
-      dispatchAction({type:'takePile'});
+      if(eligible){ dispatchAction({type:'takePile'}); }
+      else { setStatus(takeBtn.title || 'You can\'t take the pile right now.', 'warn'); }
     };
   }
 }
@@ -2584,17 +2589,26 @@ function onNetStatusChange(){
 
 function updateHostStartButtonState(){
   const startBtn = document.getElementById('start-btn');
-  if(currentMode!=='host'){ startBtn.disabled = false; return; }
+  const hint = document.getElementById('start-hint');
+  if(currentMode!=='host'){ startBtn.disabled = false; if(hint) hint.style.display='none'; return; }
   const switches = document.querySelectorAll('#seats-container .seat-switch');
-  let allConnected = true;
+  let allConnected = true, anyNetwork = false;
   switches.forEach(sw=>{
     const seatId = Number(sw.dataset.seat);
     if(seatSwitchIsOn(sw)){
+      anyNetwork = true;
       const conn = Net.hostConnections[seatId];
       if(!conn || conn.status!=='connected') allConnected=false;
     }
   });
   startBtn.disabled = !allConnected;
+  if(hint){
+    if(allConnected){ hint.style.display='none'; }
+    else { hint.style.display='block'; hint.className='status-line warn';
+      hint.textContent = anyNetwork
+        ? 'Waiting for every Network seat to join with the room code — the button lights up once everyone is in.'
+        : 'Mark a seat as Network and create a room, then have your player join with the code before starting.'; }
+  }
 }
 buildSeatRows(4);
 document.querySelector('#count-row .count-btn[data-n="4"]').classList.add('active');
@@ -2611,7 +2625,7 @@ const RULES_HTML = `
   <p class="sub">Frozen piles, bonus threes, and a team meld pool.</p>
   <div style="font-size:14px;line-height:1.65;color:var(--ivory-dim);">
     <p><b style="color:var(--ivory);">Black 3s</b> auto-meld the instant they're drawn or dealt (+100 each), and you immediately draw a replacement — this chains if another black 3 comes up.</p>
-    <p><b style="color:var(--ivory);">Red 3s</b> sit in your hand like normal cards. Meld one voluntarily for the same +100 bonus and a replacement draw, or discard it to freeze the pile. A red 3 still stuck in a hand at hand's end costs -100 instead.</p>
+    <p><b style="color:var(--ivory);">Red 3s</b> sit in your hand like normal cards. Meld one voluntarily for the same +100 bonus and a replacement draw, or discard it to freeze the pile for the next player's turn only (unlike a wild, a red 3 doesn't keep the pile frozen). A red 3 still stuck in a hand at hand's end costs -100 instead.</p>
     <p><b style="color:var(--ivory);">Wild discards</b> (2s or Jokers) freeze the pile hard: it can only be stolen with a natural pair in hand — existing table melds can't help.</p>
     <p><b style="color:var(--ivory);">Freezes persist</b> until the pile is actually taken, and the pile can never be taken while a wild or red 3 sits on top — it must be buried first.</p>
     <ul style="margin:10px 0;padding-left:20px;">

@@ -11,6 +11,21 @@ someone reports a bug, the first thing to ask is "what version does the
 corner say?" before chasing it, since an old cached build is a very common
 cause of a bug that's already fixed.
 
+## v1.2.0 — Canasta connection resilience
+- **Fix:** in a live 2-player online game, a player could occasionally get
+  stuck unable to draw or act on their turn, with no error and no visible
+  cause — as if the button just stopped working. Root-caused to an
+  occasional stalled WebRTC message (the kind of thing that can happen on
+  spotty Wi-Fi or cellular), which left the waiting player's screen out of
+  sync with the actual game state. The turn logic itself was verified
+  correct; this was a transport reliability gap.
+- Added two layers of self-healing: the host now quietly re-sends the
+  current game state to each guest every few seconds regardless of
+  whether anything changed, so a missed update catches up on its own
+  within moments. If a guest goes quiet for longer than that, a small
+  banner appears — "Connection seems quiet — tap to resync" — that
+  immediately requests a fresh state from the host.
+
 ## v1.1.0 — Canasta online + freeze-rule fixes
 - **Fix:** guests couldn't connect to a hosted room. Room codes are now
   case-insensitive (the join field no longer gets mangled by a phone's

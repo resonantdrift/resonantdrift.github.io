@@ -1589,12 +1589,60 @@ function handleGuestMessage(seatId, raw){
     if(typeof onNetStatusChange==='function') onNetStatusChange();
     return;
   }
+  if(msg.type==='resync'){
+    if(G && Net.hostConnections[seatId] && Net.hostConnections[seatId].status==='connected'){
+      const view = buildRedactedView(seatId);
+      Net.hostConnections[seatId].conn.send(JSON.stringify({type:'view', view}));
+    }
+    return;
+  }
   if(msg.type!=='action') return;
   if(!G) return; // game hasn't started yet, ignore stray actions
   applyAction(seatId, msg.action);
   refreshAll(); // broadcasts fresh views to all guests, including the sender
   maybeRunAI();
 }
+
+// Safety net for the rare stalled WebRTC message: every few seconds, while a game is running,
+// re-send each connected guest their current view even if nothing changed. A guest who somehow
+// missed the one broadcast that mattered (a dropped/delayed packet) self-heals shortly after,
+// instead of being stuck until someone notices and restarts the game.
+let hostHeartbeatTimer = null;
+function startHostHeartbeat(){
+  stopHostHeartbeat();
+  hostHeartbeatTimer = setInterval(()=>{
+    if(Net.mode==='host' && G && G.phase!=='over') broadcastToGuests();
+  }, 6000);
+}
+function stopHostHeartbeat(){ if(hostHeartbeatTimer){ clearInterval(hostHeartbeatTimer); hostHeartbeatTimer=null; } }
+
+// Guest: if it's supposedly our turn but no view has arrived in a while, offer a manual nudge —
+// covers the rare case where a single WebRTC message stalls and the host's heartbeat hasn't
+// caught up yet. Purely a safety net; does nothing during normal, responsive play.
+let guestStaleTimer = null;
+function startGuestStaleWatch(){
+  stopGuestStaleWatch();
+  guestStaleTimer = setInterval(()=>{
+    if(Net.mode!=='guest' || !G || G.phase==='over') return;
+    const silentFor = Date.now() - (Net.lastViewAt || Date.now());
+    if(silentFor > 8000) showStaleBanner();
+  }, 2000);
+}
+function stopGuestStaleWatch(){ if(guestStaleTimer){ clearInterval(guestStaleTimer); guestStaleTimer=null; } }
+function showStaleBanner(){
+  let el = document.getElementById('stale-banner');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'stale-banner';
+    el.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:999;background:#7a3b2e;color:#fff2e8;'
+      +'font:600 13px system-ui,sans-serif;text-align:center;padding:8px 12px;cursor:pointer;';
+    el.textContent = 'Connection seems quiet — tap to resync ↻';
+    el.onclick = ()=>{ if(Net.transport && Net.transport.open) Net.transport.send(JSON.stringify({type:'resync'})); };
+    document.body.appendChild(el);
+  }
+  el.style.display='block';
+}
+function hideStaleBanner(){ const el=document.getElementById('stale-banner'); if(el) el.style.display='none'; }
 
 // --- Guest: handle an incoming message from the host ---
 function handleHostMessage(raw){
@@ -1616,6 +1664,8 @@ function handleHostMessage(raw){
     return;
   }
   if(msg.type==='view'){
+    Net.lastViewAt = Date.now();
+    hideStaleBanner();
     const firstView = !G;
     applyIncomingView(msg.view);
     if(firstView){
@@ -1861,6 +1911,8 @@ function guestJoinRoom(roomCode, name){
         if(settled) return;
         settled = true; clearTimeout(timeout);
         conn.send(JSON.stringify({type:'hello', name: Net.myName || 'Guest'}));
+        Net.lastViewAt = Date.now();
+        startGuestStaleWatch();
         if(typeof onNetStatusChange==='function') onNetStatusChange();
         resolve({ok:true});
       });
@@ -2694,6 +2746,7 @@ document.getElementById('start-btn').addEventListener('click', ()=>{
       Net.mySeatId = 0;
     }
     setupGame(n, seatConfigs, aiDepth, selectedThreshold);
+    if(currentMode==='host') startHostHeartbeat();
   } catch(err){
     document.getElementById('game-screen').style.display='none';
     document.getElementById('setup-screen').style.display='block';
@@ -2732,6 +2785,6 @@ document.getElementById('join-generate-btn').addEventListener('click', async ()=
   }
 });
 </script>
-<div id="hsd-version" style="position:fixed;bottom:3px;right:6px;font:600 10px/1 system-ui,sans-serif;color:rgba(255,255,255,.30);pointer-events:none;z-index:5;letter-spacing:.04em">v1.1.0</div>
+<div id="hsd-version" style="position:fixed;bottom:3px;right:6px;font:600 10px/1 system-ui,sans-serif;color:rgba(255,255,255,.30);pointer-events:none;z-index:5;letter-spacing:.04em">v1.2.0</div>
 </body>
 </html>
